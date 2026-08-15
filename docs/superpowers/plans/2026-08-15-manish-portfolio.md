@@ -16,7 +16,12 @@
 - **Vercel serverless request bodies are capped at 4.5MB.** No file ever gets POSTed to FastAPI. Uploads are presigned PUTs direct to R2.
 - **Neon must use the pooled connection string** (host contains `-pooler`). With asyncpg behind PgBouncer, `statement_cache_size=0` is **mandatory** or you get `DuplicatePreparedStatementError` at random.
 - **Colour ground is `#0B0B0C`** with warm off-white text. Neutral surround is a hard requirement — Manish grades colour and coloured chrome distorts perception of his work.
-- **Skill levels are the strings `Expert` | `Advanced` | `Working`.** Never percentages.
+- **Skill levels are integer percentages, 0–100** — Manish's own self-assessment, shown as
+  the number. *(Reversed 2026-08-15. This constraint previously read "the strings Expert |
+  Advanced | Working, never percentages". Labels were right while the levels were our
+  guesses: an invented "85%" claims a precision nobody has. Once Manish supplied real
+  figures the reasoning inverted — the numbers are his, and banding them discarded detail
+  he had given us.)*
 - **Categories are exactly:** `color-grade`, `short-form`, `text-tracking`, `3d-modeling`.
 - **Video visibility is `public` | `unlisted`.** Never `private` — private videos cannot be embedded.
 - **No hover-preview loops.** Static thumbnails only. If you find yourself adding a `loop_url`, stop.
@@ -182,7 +187,8 @@ git commit -m "Scaffold Next.js app with design tokens and fonts"
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: `getContent(): Content` and the exported types `Content`, `SkillLevel = "Expert" | "Advanced" | "Working"`, `Experience`, `Education`, `Skill`. Tasks 3, 5, 6, 7 consume `getContent()`.
+- Produces: `getContent(): Content` and the exported types `Content`, `SkillLevel`, `Experience`, `Education`, `Skill`. Tasks 3, 5, 6, 7 consume `getContent()`.
+- **Superseded 2026-08-15:** `SkillLevel` was `"Expert" | "Advanced" | "Working"`; it is now an integer percentage 0–100. The Step 5 code below still shows the enum — see Global Constraints, which govern.
 
 - [ ] **Step 1: Install Vitest and Zod**
 
@@ -708,6 +714,7 @@ Three fixed bar widths — **never** a percentage from data.
 import { getContent } from "@/lib/content";
 
 const FILL: Record<string, string> = {
+  // SUPERSEDED 2026-08-15 — the bar now fills to `${s.level}%` directly.
   Expert: "100%", Advanced: "72%", Working: "45%",
 };
 

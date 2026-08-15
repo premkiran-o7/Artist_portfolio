@@ -31,13 +31,18 @@ say so, it reads well.
 
 ---
 
-## 3. Your software levels
+## 3. Your software levels ✅ done
 
-For each of these, tell me **Expert**, **Advanced**, or **Working**:
+Got these — CapCut 85, Lightroom 85, DaVinci Resolve 70, Blender 60. They're on the site as
+percentages.
 
-DaVinci Resolve · After Effects · Premiere Pro · CapCut · Blender · Lightroom · Canva
+**Two things to check:** you've rated CapCut above DaVinci Resolve. That's your call, but a
+studio hiring for colour work will read it, and Resolve is the professional tool there —
+worth a second look if 70 undersells you.
 
-Add or remove any — this is just what we've got in there now.
+And you drew **After Effects**, **Premiere Pro** and **Canva** in your original sketch, but
+they're on neither your CV nor this list, so I've left them off rather than claim software
+you haven't. Say the word and they go back in with whatever numbers you want.
 
 ---
 

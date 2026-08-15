@@ -2,10 +2,11 @@ import { getContent } from "@/lib/content";
 import Reveal from "@/components/Reveal";
 import SkillBar from "@/components/SkillBar";
 
-// Three fixed bar widths — never a percentage read from content.json.
-const FILL: Record<string, string> = {
-  Expert: "100%", Advanced: "72%", Working: "45%",
-};
+// Bars show Manish's own self-assessed percentages, read straight from content.json.
+// (This replaced three fixed widths mapped from Expert/Advanced/Working labels. Labels
+// were the right call while the levels were our guesses — an invented "85%" is worse
+// than an invented "Expert". Once he supplied real figures, the numbers became the
+// honest thing to show, and banding them only threw away detail he had given us.)
 
 /**
  * Monogram glyph tint, keyed by `icon` (the stable per-software slug from
@@ -60,9 +61,9 @@ export default function Skills() {
                     {s.mono}
                   </div>
                   <p className="mt-4 text-sm">{s.name}</p>
-                  <SkillBar fill={FILL[s.level]} />
+                  <SkillBar fill={`${s.level}%`} />
                   <p className="mt-2 font-[family-name:var(--font-mono)] text-[0.65rem] uppercase tracking-widest text-[var(--ink-dim)]">
-                    {s.level}
+                    {s.level}%
                   </p>
                 </div>
               </Reveal>

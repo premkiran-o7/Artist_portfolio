@@ -104,20 +104,27 @@ ISR `revalidate: 3600` backstop means the page self-heals within the hour.
   "experience": [{ "from": "2024", "to": "Present", "company": "…", "role": "…" }],
   "education":  [{ "from": "…", "to": "…", "institution": "…", "detail": "…" }],
   "skills": [
-    { "name": "DaVinci Resolve", "icon": "davinci",   "level": "Expert" },
-    { "name": "After Effects",   "icon": "ae",        "level": "Expert" },
-    { "name": "Premiere Pro",    "icon": "premiere",  "level": "Advanced" },
-    { "name": "Blender",         "icon": "blender",   "level": "Working" },
-    { "name": "CapCut",          "icon": "capcut",    "level": "Advanced" },
-    { "name": "Lightroom",       "icon": "lightroom", "level": "Working" },
-    { "name": "Canva",           "icon": "canva",     "level": "Advanced" }
+    { "name": "CapCut",          "icon": "capcut",    "level": 85, "mono": "CC" },
+    { "name": "Lightroom",       "icon": "lightroom", "level": 85, "mono": "Lr" },
+    { "name": "DaVinci Resolve", "icon": "davinci",   "level": 70, "mono": "DR" },
+    { "name": "Blender",         "icon": "blender",   "level": 60, "mono": "Bl" }
   ]
 }
 ```
 
-`level` is one of `Expert | Advanced | Working` — **not a percentage**. Percentage skill bars
-are unfalsifiable ("what is 85% Premiere?") and read as filler; the bar still renders at three
-fixed fill widths, so the visual from the reference is preserved.
+`level` is an **integer percentage, 0–100**, and the bar fills to it directly.
+
+> **Decision revision (2026-08-15).** Originally `Expert | Advanced | Working`, explicitly not
+> a percentage, on the grounds that percentage bars are unfalsifiable ("what is 85%
+> Premiere?") and read as filler. That reasoning held while the levels were **our guesses** —
+> an invented "85%" claims a precision nobody has, whereas "Expert" is a defensible summary.
+> Manish then supplied his own figures (CapCut 85, Lightroom 85, DaVinci Resolve 70, Blender
+> 60), which inverts it: the numbers are his self-assessment, and banding them into three
+> labels threw away detail he had given us.
+>
+> Skills are also reduced to the four tools his CV claims. After Effects, Premiere Pro and
+> Canva appear in his wireframe but on neither his CV nor his ratings, so they are omitted
+> rather than claiming software he has not claimed himself.
 
 ### 6.2 Postgres schema
 
@@ -294,9 +301,9 @@ pauses playback once the hero scrolls away. Honours `prefers-reduced-motion` and
 **3 — Work Experience + Education.** Two dot-and-rail vertical timelines side by side,
 stacking on mobile. Entries fade up 8px on scroll, staggered 60ms. Source: `content.json`.
 
-**4 — Software Skills.** 4-then-3 grid of tiles: a **monogram** (`DR`, `AE`, `Pr`, `Lr`, `Bl`,
-`CC`, `Cv`) set in the display face, the software's name, and a bar that fills to one of three
-fixed widths on scroll-into-view, labelled Expert / Advanced / Working.
+**4 — Software Skills.** Grid of tiles: a **monogram** (`CC`, `Lr`, `DR`, `Bl`) set in the
+display face and tinted with that app's brand hue, the software's name, and a bar that fills
+on scroll-into-view to Manish's own self-assessed percentage, with the number shown beneath.
 
 > **Decision revision (2026-08-15).** Originally specified as brand SVG icons. Five of the
 > seven — After Effects, Premiere Pro, Lightroom, CapCut, Canva — do not exist in the Simple
