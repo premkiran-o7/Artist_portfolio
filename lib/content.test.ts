@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ContentSchema, getContent } from "./content";
+import type { SkillLevel } from "./content";
 
 describe("content", () => {
   it("parses the real content.json", () => {
@@ -17,5 +18,13 @@ describe("content", () => {
   it("rejects a bio that is not exactly three lines", () => {
     const r = ContentSchema.shape.bio.safeParse(["one", "two"]);
     expect(r.success).toBe(false);
+  });
+
+  it("exports SkillLevel as a usable type", () => {
+    const level: SkillLevel = "Expert";
+    // @ts-expect-error "Master" is not a valid skill level
+    const bad: SkillLevel = "Master";
+    expect(level).toBe("Expert");
+    expect(bad).toBe("Master");
   });
 });

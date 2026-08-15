@@ -2,6 +2,7 @@ import { z } from "zod";
 import raw from "@/content.json";
 
 export const SkillLevel = z.enum(["Expert", "Advanced", "Working"]);
+export type SkillLevel = z.infer<typeof SkillLevel>;
 
 export const ContentSchema = z.object({
   name: z.string().min(1),
