@@ -12,18 +12,17 @@ export default function Hero() {
       id="hero"
       className="relative isolate flex min-h-dvh items-center overflow-hidden px-6 pt-24 pb-32 md:px-12 md:pb-28"
     >
-      <ShowReel
-        src="/showreel-placeholder.mp4"
-        poster="/showreel-poster.jpg"
-        youtubeUrl={c.socials.youtube}
-      />
+      {/* No reel yet. ShowReel falls back to a plain backdrop; pass `poster` to use a
+          still image, or `src` to bring the 2s autoplay reel back. Task 22 wires these
+          to the profile row so Manish can upload his own. */}
+      <ShowReel youtubeUrl={c.socials.youtube} />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         {/* Capped at max-w-3xl so the text stays inside the dense side of the scrim. */}
         <div className="grid max-w-3xl gap-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start sm:gap-8">
           <div className="relative aspect-[3/4] w-32 shrink-0 overflow-hidden rounded-xl border border-[var(--ink)]/15 sm:w-40 md:w-[17rem]">
             <Image
-              src="/profile-placeholder.jpg"
+              src="/portrait.jpg"
               alt={`Portrait of ${c.name}`}
               fill
               priority
