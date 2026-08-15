@@ -16,7 +16,9 @@ export const ContentSchema = z.object({
   name: z.string().min(1),
   tagline: z.string().min(1),
   bio: z.array(z.string().min(1)).length(3),
-  dob: z.string().min(1),
+  // Optional: Manish's CV carries no date of birth, and the hero omits the field
+  // entirely when it is empty rather than rendering a placeholder dash.
+  dob: z.string(),
   phone: z.string().min(1),
   email: z.string().email(),
   socials: z.object({

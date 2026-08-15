@@ -14,8 +14,11 @@ function Rail({ title, items }: {
             <Reveal delay={index * 60}>
               <span aria-hidden
                 className="absolute -left-[1.65rem] top-2 h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+              {/* A missing `from` is normal, not an error: a CV often gives only the
+                  year a qualification completed. Render the single year rather than a
+                  dangling "— 2024". */}
               <p className="font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]">
-                {it.from} — {it.to}
+                {it.from ? `${it.from} — ${it.to}` : it.to}
               </p>
               <p className="mt-1 text-xl">{it.head}</p>
               <p className="text-[var(--ink-dim)]">{it.sub}</p>

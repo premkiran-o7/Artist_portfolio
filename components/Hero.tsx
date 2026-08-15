@@ -57,7 +57,11 @@ export default function Hero() {
                 then sits at the end of the first line, exactly as the original markup rendered it,
                 instead of dangling at the start of the second. */}
             <dl className="mt-8 border-t border-[var(--ink)]/20 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] [&>div:not(:last-child)]:border-r [&>div:not(:last-child)]:border-[var(--ink)]/30 [&>div:not(:last-child)]:pr-6">
-              <div><dt className="sr-only">Date of birth</dt><dd>{c.dob}</dd></div>
+              {/* Omitted entirely when unset — an empty slot with a divider beside it
+                  reads as a bug, and a placeholder dash reads as unfinished. */}
+              {c.dob && (
+                <div><dt className="sr-only">Date of birth</dt><dd>{c.dob}</dd></div>
+              )}
               <div><dt className="sr-only">Phone</dt>
                 <dd><a className="hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)]" href={`tel:${c.phone.replace(/\s/g, "")}`}>{c.phone}</a></dd>
               </div>
