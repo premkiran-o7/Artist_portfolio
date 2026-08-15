@@ -31,9 +31,9 @@
     }
   ],
   "skills": [
-    { "name": "DaVinci Resolve", "icon": "davinci",   "level": "Expert",   "mono": "DR" },
-    { "name": "CapCut",          "icon": "capcut",    "level": "Advanced", "mono": "CC" },
-    { "name": "Lightroom",       "icon": "lightroom", "level": "Working",  "mono": "Lr" },
+    { "name": "CapCut",          "icon": "capcut",    "level": "Expert",   "mono": "CC" },
+    { "name": "Lightroom",       "icon": "lightroom", "level": "Expert",   "mono": "Lr" },
+    { "name": "DaVinci Resolve", "icon": "davinci",   "level": "Advanced", "mono": "DR" },
     { "name": "Blender",         "icon": "blender",   "level": "Working",  "mono": "Bl" }
   ]
 }
