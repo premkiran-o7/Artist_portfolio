@@ -94,7 +94,7 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
         {!started && (
           <button
             onClick={start}
-            className="rounded-full border border-[var(--ink)]/40 bg-[var(--ground)]/70 px-4 py-2 text-sm backdrop-blur hover:border-[var(--ink)]/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="rounded-full border border-[var(--ink)]/40 bg-[var(--ground)]/70 px-4 py-2 text-sm backdrop-blur hover:border-[var(--ink)]/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)]"
           >
             Play reel
           </button>
@@ -106,7 +106,7 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
           }}
           aria-pressed={!muted}
           aria-label={muted ? "Unmute showreel" : "Mute showreel"}
-          className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 text-sm backdrop-blur hover:border-[var(--ink)]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 text-sm backdrop-blur hover:border-[var(--ink)]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)]"
         >
           <span aria-hidden>{muted ? "🔇" : "🔊"}</span>{" "}
           {muted ? "Unmute" : "Mute"}
@@ -116,7 +116,7 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
             href={youtubeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] backdrop-blur hover:border-[var(--ink)]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] backdrop-blur hover:border-[var(--ink)]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)]"
           >
             Watch full reel ↗
           </a>
