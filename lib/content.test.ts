@@ -4,8 +4,11 @@ import type { SkillLevel } from "./content";
 
 describe("content", () => {
   it("parses the real content.json", () => {
+    // Asserts structure, not content. An earlier version hardcoded the name, which broke
+    // the moment real data landed — a schema test should not care what the name is.
     const c = getContent();
-    expect(c.name).toBe("Manish");
+    expect(c.name.length).toBeGreaterThan(0);
+    expect(c.email).toContain("@");
     expect(c.bio).toHaveLength(3);
     expect(c.skills.length).toBeGreaterThan(0);
   });

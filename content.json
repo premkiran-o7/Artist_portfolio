@@ -1,32 +1,39 @@
 {
-  "name": "Manish",
-  "tagline": "Colour · Motion graphics · Short-form",
+  "name": "Manish Ravalkol",
+  "tagline": "AI video production · Editing · Prompt engineering",
   "bio": [
-    "I cut short-form video and build motion graphics from scratch.",
-    "Colour grading, text tracking and storyboarding for brands and creators.",
-    "Based in India, working with clients everywhere."
+    "AI-driven video production, editing and prompt engineering.",
+    "Scripting through to final QC, at publisher scale.",
+    "AI Video Editor at Movate, Hyderabad."
   ],
-  "dob": "01.01.2001",
-  "phone": "+91 00000 00000",
-  "email": "manish@example.com",
+  "dob": "—",
+  "phone": "+91 63026 64146",
+  "email": "ravalkolmanish@gmail.com",
   "socials": {
     "instagram": "https://instagram.com/",
     "youtube": "https://youtube.com/",
-    "linkedin": "https://linkedin.com/in/"
+    "linkedin": "https://www.linkedin.com/in/manish-ravalkol-20a7a1288/"
   },
   "experience": [
-    { "from": "2024", "to": "Present", "company": "XXX Company", "role": "Video Editor" }
+    {
+      "from": "2024",
+      "to": "Present",
+      "company": "Movate (CSS Corp) — Hyderabad",
+      "role": "AI Video Editor · Client: Rizzle"
+    }
   ],
   "education": [
-    { "from": "2020", "to": "2024", "institution": "XXX", "detail": "Self-taught via YouTube" }
+    {
+      "from": "",
+      "to": "2024",
+      "institution": "Tapasya Degree College, Osmania University",
+      "detail": "B.Com (Computer Applications)"
+    }
   ],
   "skills": [
     { "name": "DaVinci Resolve", "icon": "davinci",   "level": "Expert",   "mono": "DR" },
-    { "name": "After Effects",   "icon": "ae",        "level": "Expert",   "mono": "AE" },
-    { "name": "Premiere Pro",    "icon": "premiere",  "level": "Advanced", "mono": "Pr" },
     { "name": "CapCut",          "icon": "capcut",    "level": "Advanced", "mono": "CC" },
-    { "name": "Blender",         "icon": "blender",   "level": "Working",  "mono": "Bl" },
     { "name": "Lightroom",       "icon": "lightroom", "level": "Working",  "mono": "Lr" },
-    { "name": "Canva",           "icon": "canva",     "level": "Advanced", "mono": "Cv" }
+    { "name": "Blender",         "icon": "blender",   "level": "Working",  "mono": "Bl" }
   ]
 }
