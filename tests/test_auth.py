@@ -42,6 +42,33 @@ def test_me_with_cookie_succeeds():
     assert c.get("/api/py/me").status_code == 200
 
 
-# The CSRF-header test (test_write_without_csrf_header_is_rejected) depends on
-# Task 12's POST /api/py/videos route existing, and is deferred to that task.
-# require_admin's X-Requested-With enforcement is implemented now regardless.
+def test_write_without_csrf_header_is_rejected(admin_client_no_csrf):
+    r = admin_client_no_csrf.post("/api/py/videos", json={
+        "title": "X", "category": "short-form",
+        "youtube_url": "https://youtu.be/dQw4w9WgXcQ"})
+    assert r.status_code == 403
+
+
+def test_locks_out_after_ten_failures(client_no_cookie):
+    for _ in range(10):
+        client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "x"})
+    r = client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "correct-horse"})
+    assert r.status_code == 429
+
+
+def test_failed_attempts_below_threshold_do_not_lock_out(client_no_cookie):
+    for _ in range(9):
+        client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "x"})
+    r = client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "correct-horse"})
+    assert r.status_code == 200
+
+
+def test_successful_login_resets_failure_count(client_no_cookie):
+    for _ in range(5):
+        client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "x"})
+    ok = client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "correct-horse"})
+    assert ok.status_code == 200
+    for _ in range(9):
+        client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "x"})
+    r = client_no_cookie.post("/api/py/login", json={"username": "manish", "password": "correct-horse"})
+    assert r.status_code == 200

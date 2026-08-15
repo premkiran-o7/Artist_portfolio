@@ -6,9 +6,15 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from .db import get_session
+from .models import LoginAttempt
 
 COOKIE_NAME = "manish_admin"
 TOKEN_DAYS = 7
+MAX_LOGIN_FAILURES = 10
+LOCKOUT_MINUTES = 15
 _hasher = PasswordHasher()
 router = APIRouter()
 
@@ -47,13 +53,41 @@ async def require_admin(request: Request) -> str:
 
 
 @router.post("/api/py/login")
-async def login(body: LoginBody, response: Response) -> dict[str, bool]:
-    if body.username != os.environ["ADMIN_USERNAME"]:
+async def login(
+    body: LoginBody,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, bool]:
+    # Lockout is tracked in a table, not an in-memory counter, because serverless
+    # functions share no memory between invocations (spec §8; deferred from Task 11).
+    ip = request.client.host if request.client else "unknown"
+    now = datetime.now(timezone.utc)
+
+    attempt = await session.get(LoginAttempt, ip)
+    if attempt is not None and attempt.locked_until is not None and attempt.locked_until > now:
+        raise HTTPException(429, "too many failed attempts, try again later")
+
+    valid = body.username == os.environ["ADMIN_USERNAME"]
+    if valid:
+        try:
+            _hasher.verify(os.environ["ADMIN_PASSWORD_HASH"], body.password)
+        except VerifyMismatchError:
+            valid = False
+
+    if not valid:
+        if attempt is None:
+            attempt = LoginAttempt(ip=ip, failures=0, locked_until=None)
+            session.add(attempt)
+        attempt.failures += 1
+        if attempt.failures >= MAX_LOGIN_FAILURES:
+            attempt.locked_until = now + timedelta(minutes=LOCKOUT_MINUTES)
+        await session.commit()
         raise HTTPException(401, "invalid credentials")
-    try:
-        _hasher.verify(os.environ["ADMIN_PASSWORD_HASH"], body.password)
-    except VerifyMismatchError:
-        raise HTTPException(401, "invalid credentials")
+
+    if attempt is not None:
+        await session.delete(attempt)
+        await session.commit()
 
     response.set_cookie(
         COOKIE_NAME, _issue_token(body.username),
