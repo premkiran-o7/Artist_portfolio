@@ -116,7 +116,7 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
             href={youtubeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)] backdrop-blur hover:border-[var(--ink)]/50 hover:text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="rounded-full border border-[var(--ink)]/20 bg-[var(--ground)]/70 px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] backdrop-blur hover:border-[var(--ink)]/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             Watch full reel ↗
           </a>

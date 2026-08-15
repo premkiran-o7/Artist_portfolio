@@ -33,7 +33,9 @@ export default function Hero() {
             <h1 className="font-[family-name:var(--font-display)] font-semibold tracking-tight leading-[0.95] text-[clamp(3.5rem,9vw,7rem)]">
               {c.name}
             </h1>
-            <p className="mt-3 text-[var(--ink-dim)] text-lg">{c.tagline}</p>
+            {/* Over footage --ink-dim only reaches 1.74:1, so tone cannot carry the
+                hierarchy here: it comes from weight and tracking against the name instead. */}
+            <p className="mt-3 text-[var(--ink)] text-lg font-light tracking-wide">{c.tagline}</p>
           </div>
         </div>
 
@@ -42,16 +44,19 @@ export default function Hero() {
         </div>
 
         {/* --rule composites to roughly #1A1A1A over footage and would vanish, so this
-            hairline uses --ink at low alpha instead. */}
-        <dl className="mt-8 max-w-3xl border-t border-[var(--ink)]/20 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]">
+            hairline uses --ink at low alpha instead.
+            These are the contact details — the most functional characters on the page — so
+            they run at full --ink. The smaller monospace face, uppercase and wide tracking
+            already read as secondary without leaning on tone. */}
+        <dl className="mt-8 max-w-3xl border-t border-[var(--ink)]/20 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)]">
           <div><dt className="sr-only">Date of birth</dt><dd>{c.dob}</dd></div>
           <div><span aria-hidden className="opacity-30">|</span></div>
           <div><dt className="sr-only">Phone</dt>
-            <dd><a className="hover:text-[var(--ink)]" href={`tel:${c.phone.replace(/\s/g, "")}`}>{c.phone}</a></dd>
+            <dd><a className="hover:underline underline-offset-4" href={`tel:${c.phone.replace(/\s/g, "")}`}>{c.phone}</a></dd>
           </div>
           <div><span aria-hidden className="opacity-30">|</span></div>
           <div><dt className="sr-only">Email</dt>
-            <dd><a className="hover:text-[var(--ink)]" href={`mailto:${c.email}`}>{c.email}</a></dd>
+            <dd><a className="hover:underline underline-offset-4" href={`mailto:${c.email}`}>{c.email}</a></dd>
           </div>
         </dl>
       </div>
