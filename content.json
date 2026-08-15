@@ -1,0 +1,32 @@
+{
+  "name": "Manish",
+  "tagline": "Colour · Motion graphics · Short-form",
+  "bio": [
+    "I cut short-form video and build motion graphics from scratch.",
+    "Colour grading, text tracking and storyboarding for brands and creators.",
+    "Based in India, working with clients everywhere."
+  ],
+  "dob": "01.01.2001",
+  "phone": "+91 00000 00000",
+  "email": "manish@example.com",
+  "socials": {
+    "instagram": "https://instagram.com/",
+    "youtube": "https://youtube.com/",
+    "linkedin": "https://linkedin.com/in/"
+  },
+  "experience": [
+    { "from": "2024", "to": "Present", "company": "XXX Company", "role": "Video Editor" }
+  ],
+  "education": [
+    { "from": "2020", "to": "2024", "institution": "XXX", "detail": "Self-taught via YouTube" }
+  ],
+  "skills": [
+    { "name": "DaVinci Resolve", "icon": "davinci",   "level": "Expert" },
+    { "name": "After Effects",   "icon": "ae",        "level": "Expert" },
+    { "name": "Premiere Pro",    "icon": "premiere",  "level": "Advanced" },
+    { "name": "CapCut",          "icon": "capcut",    "level": "Advanced" },
+    { "name": "Blender",         "icon": "blender",   "level": "Working" },
+    { "name": "Lightroom",       "icon": "lightroom", "level": "Working" },
+    { "name": "Canva",           "icon": "canva",     "level": "Advanced" }
+  ]
+}
