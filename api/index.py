@@ -5,7 +5,10 @@ sys.path.insert(0, os.path.dirname(__file__))  # make _lib importable on Vercel
 
 from fastapi import FastAPI
 
+from _lib.auth import router as auth_router
+
 app = FastAPI(title="Manish Portfolio API", docs_url=None, redoc_url=None)
+app.include_router(auth_router)
 
 
 @app.get("/api/py/health")
