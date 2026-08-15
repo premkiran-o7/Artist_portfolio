@@ -131,3 +131,35 @@ def test_upsert_playlist_rejects_unknown_category(admin_client):
         "youtube_playlist_url": "https://youtube.com/playlist?list=PLabc",
     })
     assert r.status_code == 422
+
+
+# --- coming-soon delete ---
+#
+# The original plan gave coming-soon only GET/POST/PATCH, so an item could be toggled
+# live/not-live but never removed. These cover the DELETE that closes that gap.
+
+
+def test_delete_coming_soon_requires_auth(client_no_cookie):
+    r = client_no_cookie.delete("/api/py/coming-soon/00000000-0000-0000-0000-000000000000")
+    assert r.status_code == 401
+
+
+def test_delete_coming_soon_requires_csrf_header(admin_client_no_csrf):
+    r = admin_client_no_csrf.delete("/api/py/coming-soon/00000000-0000-0000-0000-000000000000")
+    assert r.status_code == 403
+
+
+def test_delete_coming_soon_removes_it(admin_client):
+    created = admin_client.post(
+        "/api/py/coming-soon", json={"title": "3D Modeling", "blurb": "Working on it"}
+    ).json()
+    assert admin_client.get("/api/py/coming-soon").json() != []
+
+    r = admin_client.delete(f"/api/py/coming-soon/{created['id']}")
+    assert r.status_code == 204
+    assert admin_client.get("/api/py/coming-soon").json() == []
+
+
+def test_delete_missing_coming_soon_returns_404(admin_client):
+    r = admin_client.delete("/api/py/coming-soon/00000000-0000-0000-0000-000000000000")
+    assert r.status_code == 404

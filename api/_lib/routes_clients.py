@@ -166,6 +166,26 @@ async def update_coming_soon(
     return item
 
 
+@router.delete("/api/py/coming-soon/{item_id}", status_code=204)
+async def delete_coming_soon(
+    item_id: UUID,
+    _admin: str = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    """Remove a coming-soon item outright.
+
+    The original plan gave coming-soon only GET/POST/PATCH, which left no way to remove an
+    item once added — `is_live` could move it between the teaser and the main grid, but a
+    mistyped or abandoned entry was permanent. Mirrors delete_client.
+    """
+    item = await session.get(ComingSoon, item_id)
+    if item is None:
+        raise HTTPException(404, "coming-soon item not found")
+    await session.delete(item)
+    await session.commit()
+    await bust_cache()
+
+
 # --- playlists ---
 
 
