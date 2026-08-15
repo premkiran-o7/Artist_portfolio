@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section id="hero" className="min-h-[88vh] flex items-center px-6 md:px-12 pt-24 pb-12">
       <div className="mx-auto w-full max-w-6xl grid gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] md:items-center">
-        <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl border border-white/10">
+        <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl border border-[var(--rule)]">
           <Image
             src="/profile-placeholder.jpg"
             alt={`Portrait of ${c.name}`}
@@ -27,13 +27,13 @@ export default function Hero() {
             {c.bio.map((line) => <p key={line}>{line}</p>)}
           </div>
 
-          <dl className="mt-8 border-t border-white/10 pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]">
+          <dl className="mt-8 border-t border-[var(--rule)] pt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]">
             <div><dt className="sr-only">Date of birth</dt><dd>{c.dob}</dd></div>
-            <span aria-hidden className="opacity-30">|</span>
+            <div><span aria-hidden className="opacity-30">|</span></div>
             <div><dt className="sr-only">Phone</dt>
               <dd><a className="hover:text-[var(--ink)]" href={`tel:${c.phone.replace(/\s/g, "")}`}>{c.phone}</a></dd>
             </div>
-            <span aria-hidden className="opacity-30">|</span>
+            <div><span aria-hidden className="opacity-30">|</span></div>
             <div><dt className="sr-only">Email</dt>
               <dd><a className="hover:text-[var(--ink)]" href={`mailto:${c.email}`}>{c.email}</a></dd>
             </div>
