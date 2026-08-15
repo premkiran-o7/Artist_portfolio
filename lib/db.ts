@@ -34,9 +34,20 @@ export type ComingSoonRow = {
   is_live: boolean;
 };
 
-/** Thumbnail precedence: Manish's upload wins; otherwise YouTube's own. */
+/**
+ * Thumbnail precedence: Manish's upload wins; otherwise YouTube's own.
+ *
+ * `||`, not `??`: the admin PATCH endpoints silently ignore an explicit
+ * `null` (see api/_lib/routes_videos.py / routes_clients.py — `if value is
+ * None: continue`), so a dashboard control can never clear `thumb_url` back
+ * to `NULL`. Sending `""` instead does get written, and falsy-coalescing
+ * here is what makes that value actually fall back to the YouTube-derived
+ * thumbnail instead of rendering a broken image. `??` would treat `""` as
+ * "present" and never fall back — that was the bug. `""` is therefore the
+ * one working way to clear a thumbnail from the admin UI; never send `null`.
+ */
 export function resolveThumb(v: VideoRow): string {
-  return v.thumb_url ?? thumbnailUrl(v.youtube_id);
+  return v.thumb_url || thumbnailUrl(v.youtube_id);
 }
 
 /**

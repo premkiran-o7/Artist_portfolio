@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { adminFetch } from "@/lib/adminFetch";
+import { moveAndReindex, reindexDelta } from "@/lib/adminReorder";
 import { thumbnailUrl } from "@/lib/youtube";
 
 // Mirrors api/_lib/models.py's Category/Visibility enums exactly. There is no
@@ -61,7 +62,10 @@ type Props = {
  * `sort_order` (every video is created with `sort_order: 0` — see
  * VideoForm.tsx — so any two never-yet-reordered rows in a category start out
  * tied). Re-indexing always produces a distinct, strictly ordered sequence,
- * so the arrows never appear to do nothing.
+ * so the arrows never appear to do nothing. The position-swap-then-reindex
+ * logic itself lives in lib/adminReorder.ts's `moveAndReindex`, shared with
+ * the Clients tab's ClientList.tsx so that fix can't be silently reverted by
+ * a second, naive reorder implementation elsewhere in the dashboard.
  */
 export default function RowList({ videos, loading, onChanged }: Props) {
   // One flag for every action, not one per row: a move touches two rows at
@@ -69,15 +73,30 @@ export default function RowList({ videos, loading, onChanged }: Props) {
   // express "this whole category is mid-mutation" cleanly. Simpler to just
   // disable every action button in the list while anything is in flight.
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function withBusy(fn: () => Promise<void>) {
+  /**
+   * Runs a mutation with the list disabled, and swallows *nothing* silently:
+   * a rejection (adminFetch throws on a network failure, not just on a bad
+   * status) surfaces as a message above the table.
+   *
+   * Fire-and-forget by design — it returns void, so the onClick handlers below
+   * can call it without an `await` or a `.catch` and still never produce an
+   * unhandled promise rejection.
+   */
+  function withBusy(fn: () => Promise<void>) {
     if (busy) return;
     setBusy(true);
-    try {
-      await fn();
-    } finally {
-      setBusy(false);
-    }
+    setError(null);
+    void (async () => {
+      try {
+        await fn();
+      } catch {
+        setError("Something went wrong. Refresh the page and try again.");
+      } finally {
+        setBusy(false);
+      }
+    })();
   }
 
   /** PATCHes one video. Returns whether it succeeded; never throws. */
@@ -98,49 +117,75 @@ export default function RowList({ videos, loading, onChanged }: Props) {
   }
 
   function handleToggleFeatured(video: Video) {
-    return withBusy(async () => {
+    withBusy(async () => {
       const ok = await patchVideo(video.id, { is_featured: !video.is_featured });
-      if (ok) await onChanged();
+      if (!ok) setError(`Could not update "${video.title}".`);
+      await onChanged();
     });
   }
 
   function handleMove(rows: Video[], index: number, direction: -1 | 1) {
-    const target = index + direction;
-    if (target < 0 || target >= rows.length) return;
+    const reordered = moveAndReindex(rows, index, direction);
+    if (!reordered) return;
 
-    const reordered = rows.slice();
-    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    // Only the rows whose sort_order actually changed — see reindexDelta.
+    const changes = reindexDelta(reordered);
+    if (changes.length === 0) return;
 
-    return withBusy(async () => {
+    withBusy(async () => {
       const results = await Promise.all(
-        reordered.map((v, i) => patchVideo(v.id, { sort_order: i }))
+        changes.map(({ row, sort_order }) => patchVideo(row.id, { sort_order }))
       );
-      if (results.every(Boolean)) await onChanged();
+      if (!results.every(Boolean)) {
+        // A move is several PATCHes; if some land and some don't, the stored
+        // order is now a mix of old and new. Say so rather than leaving the
+        // arrows looking like they worked.
+        setError("Some rows could not be reordered — the order below is what the server has now.");
+      }
+      // Re-fetch either way. On success it confirms the new order; on partial
+      // failure it is the only way to show what actually got written.
+      await onChanged();
     });
   }
 
   function handleDelete(video: Video) {
     if (!window.confirm(`Delete "${video.title}"? This cannot be undone.`)) return;
-    return withBusy(async () => {
+    withBusy(async () => {
       const res = await adminFetch(`/videos/${video.id}`, { method: "DELETE" });
       if (res.status === 401) {
         window.location.href = "/admin";
         return;
       }
-      if (res.ok) await onChanged();
+      if (!res.ok) setError(`Could not delete "${video.title}".`);
+      await onChanged();
     });
   }
+
+  // Rendered in every branch, not just alongside the table: deleting the last
+  // video empties the list, and the "couldn't delete" case has to stay visible
+  // even when what's left to render is the empty state.
+  const banner = error && (
+    <p role="alert" className="mb-4 text-sm text-[var(--accent)]">
+      {error}
+    </p>
+  );
 
   if (loading) {
     return <p className="text-sm text-[var(--ink-dim)]">Loading…</p>;
   }
 
   if (videos.length === 0) {
-    return <p className="text-sm text-[var(--ink-dim)]">No videos yet.</p>;
+    return (
+      <>
+        {banner}
+        <p className="text-sm text-[var(--ink-dim)]">No videos yet.</p>
+      </>
+    );
   }
 
   return (
     <div className="flex flex-col gap-10">
+      {banner}
       {CATEGORIES.map(({ value, label }) => {
         const rows = videos
           .filter((v) => v.category === value)
@@ -183,7 +228,12 @@ export default function RowList({ videos, loading, onChanged }: Props) {
                             bucket domain); no next/image remote pattern
                             configured for either. */}
                         <img
-                          src={video.thumb_url ?? thumbnailUrl(video.youtube_id)}
+                          // `||`, not `??` — matches lib/db.ts's resolveThumb()
+                          // fix (Task 17). An empty-string thumb_url means
+                          // "no custom thumbnail" just as much as null does;
+                          // `??` would render a broken image for it instead
+                          // of falling back to YouTube's thumbnail.
+                          src={video.thumb_url || thumbnailUrl(video.youtube_id)}
                           alt=""
                           className="h-10 w-16 object-cover"
                         />

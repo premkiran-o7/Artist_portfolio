@@ -99,4 +99,14 @@ describe("resolveThumb", () => {
   it("falls back to the YouTube thumbnail when none is uploaded", () => {
     expect(resolveThumb(SAMPLE_VIDEO)).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
   });
+
+  it("treats an empty-string thumb_url as absent (falls back to YouTube)", () => {
+    // The PATCH endpoints silently ignore an explicit `null` (see
+    // api/_lib/routes_videos.py), so "" is the only value the admin dashboard
+    // can send to clear a thumbnail. `??` would treat "" as present and skip
+    // the fallback, rendering a broken image — this is the regression test
+    // for switching resolveThumb from `??` to `||`.
+    const cleared: VideoRow = { ...SAMPLE_VIDEO, thumb_url: "" };
+    expect(resolveThumb(cleared)).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+  });
 });
