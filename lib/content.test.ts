@@ -11,7 +11,12 @@ describe("content", () => {
   });
 
   it("rejects a percentage skill level", () => {
-    const bad = { level: 85, name: "AE", icon: "ae" };
+    const bad = { level: 85, name: "AE", icon: "ae", mono: "AE" };
+    expect(ContentSchema.shape.skills.safeParse([bad]).success).toBe(false);
+  });
+
+  it("rejects a skill missing its monogram", () => {
+    const bad = { level: "Expert", name: "After Effects", icon: "ae" };
     expect(ContentSchema.shape.skills.safeParse([bad]).success).toBe(false);
   });
 

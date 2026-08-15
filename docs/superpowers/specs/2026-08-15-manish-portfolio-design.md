@@ -258,8 +258,17 @@ pauses playback once the hero scrolls away. Honours `prefers-reduced-motion` and
 **3 — Work Experience + Education.** Two dot-and-rail vertical timelines side by side,
 stacking on mobile. Entries fade up 8px on scroll, staggered 60ms. Source: `content.json`.
 
-**4 — Software Skills.** 4-then-3 grid of tiles: brand SVG icon, name, and a bar that fills to
-one of three fixed widths on scroll-into-view, labelled Expert / Advanced / Working.
+**4 — Software Skills.** 4-then-3 grid of tiles: a **monogram** (`DR`, `AE`, `Pr`, `Lr`, `Bl`,
+`CC`, `Cv`) set in the display face, the software's name, and a bar that fills to one of three
+fixed widths on scroll-into-view, labelled Expert / Advanced / Working.
+
+> **Decision revision (2026-08-15).** Originally specified as brand SVG icons. Five of the
+> seven — After Effects, Premiere Pro, Lightroom, CapCut, Canva — do not exist in the Simple
+> Icons catalogue at all (Adobe had its marks removed from that project), so only DaVinci
+> Resolve and Blender had real artwork and the rest rendered as blank squares. Monograms are
+> what Manish actually drew: his wireframe boxes contain text (`DR`, `LR`, `AE`, `Pr`…), not
+> logos — the logos came from the reference resume, not his sketch. Monograms also render
+> identically everywhere, are trademark-clean, and add no page weight.
 
 **5 — Category cards.** Three cards — Colour Grade, Short Form Content, Text Tracking — each
 with a media area, title, rule, and a **Full Playlist** link beneath, exactly as drawn.

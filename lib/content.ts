@@ -23,7 +23,7 @@ export const ContentSchema = z.object({
     from: z.string(), to: z.string(), institution: z.string(), detail: z.string(),
   })),
   skills: z.array(z.object({
-    name: z.string(), icon: z.string(), level: SkillLevel,
+    name: z.string(), icon: z.string(), level: SkillLevel, mono: z.string().min(1),
   })).min(1),
 });
 
