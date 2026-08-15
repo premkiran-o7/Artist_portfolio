@@ -126,6 +126,33 @@ def test_patch_video_featured_clears_previous_in_target_category(admin_client):
     assert len(featured) == 1 and featured[0]["id"] == b["id"]
 
 
+def test_patch_video_category_change_still_clears_target_categorys_featured(admin_client):
+    # A PATCH that only changes `category` (not `is_featured`) still moves an
+    # already-featured video into its new category, and must clear whatever was already
+    # featured there — otherwise the target category ends up with two featured videos.
+    moved = admin_client.post("/api/py/videos", json={"title": "A", "category": "color-grade",
+        "youtube_url": "https://youtu.be/dQw4w9WgXcQ", "is_featured": True}).json()
+    already_there = admin_client.post("/api/py/videos", json={"title": "B", "category": "short-form",
+        "youtube_url": "https://youtu.be/oHg5SJYRHA0", "is_featured": True}).json()
+
+    admin_client.patch(f"/api/py/videos/{moved['id']}", json={"category": "short-form"})
+
+    listed = admin_client.get("/api/py/videos?category=short-form").json()
+    featured = [v for v in listed if v["is_featured"]]
+    assert len(featured) == 1 and featured[0]["id"] == moved["id"]
+    assert already_there["id"] not in [v["id"] for v in featured]
+
+
+def test_patch_with_explicit_null_is_ignored_not_500(admin_client):
+    created = admin_client.post("/api/py/videos", json={
+        "title": "Original", "category": "short-form",
+        "youtube_url": "https://youtu.be/dQw4w9WgXcQ",
+    }).json()
+    r = admin_client.patch(f"/api/py/videos/{created['id']}", json={"title": None})
+    assert r.status_code == 200
+    assert r.json()["title"] == "Original"
+
+
 def test_patch_missing_video_returns_404(admin_client):
     r = admin_client.patch("/api/py/videos/00000000-0000-0000-0000-000000000000", json={
         "title": "nope",

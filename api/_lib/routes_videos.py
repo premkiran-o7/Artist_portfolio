@@ -122,16 +122,29 @@ async def update_video(
 
     data = body.model_dump(exclude_unset=True)
 
-    if data.get("is_featured") is True:
-        target_category = data.get("category", video.category)
+    # Use *effective* values, not just submitted ones. A PATCH that changes only
+    # `category` (leaving `is_featured` untouched) still moves an already-featured video
+    # into its new category — if we only checked the submitted `is_featured`, that move
+    # would land without clearing whatever was already featured there, leaving two
+    # featured videos in the target category.
+    effective_featured = data.get("is_featured", video.is_featured)
+    target_category = data.get("category", video.category)
+    if effective_featured:
         await session.execute(
-            update(Video).where(Video.category == target_category).values(is_featured=False)
+            update(Video)
+            .where(Video.category == target_category, Video.id != video.id)
+            .values(is_featured=False)
         )
 
     if "youtube_url" in data and data["youtube_url"] is not None:
         video.youtube_id = parse_youtube_id(data["youtube_url"])
 
     for field, value in data.items():
+        # Explicit `null` on a NOT NULL column (e.g. {"title": null}) would otherwise hit
+        # the database as a raw IntegrityError -> 500. Silently ignoring an explicit null
+        # is a deliberate simplification, not full nullable-field validation.
+        if value is None:
+            continue
         setattr(video, field, value)
 
     await session.commit()

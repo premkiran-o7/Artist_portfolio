@@ -90,6 +90,21 @@ def test_patch_missing_coming_soon_returns_404(admin_client):
 
 # --- playlists ---
 
+def test_list_playlists_does_not_require_auth(client_no_cookie):
+    assert client_no_cookie.get("/api/py/playlists").status_code == 200
+
+
+def test_list_playlists_returns_all_created_rows(admin_client):
+    admin_client.put("/api/py/playlists/color-grade", json={
+        "youtube_playlist_url": "https://youtube.com/playlist?list=PLabc",
+    })
+    admin_client.put("/api/py/playlists/short-form", json={
+        "youtube_playlist_url": "https://youtube.com/playlist?list=PLxyz",
+    })
+    listed = admin_client.get("/api/py/playlists").json()
+    assert {p["category"] for p in listed} == {"color-grade", "short-form"}
+
+
 def test_upsert_playlist_requires_auth(client_no_cookie):
     r = client_no_cookie.put("/api/py/playlists/color-grade", json={
         "youtube_playlist_url": "https://youtube.com/playlist?list=PLabc",

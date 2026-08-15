@@ -72,6 +72,10 @@ async def update_client(
     if client is None:
         raise HTTPException(404, "client not found")
     for field, value in body.model_dump(exclude_unset=True).items():
+        # Explicit `null` on a NOT NULL column would otherwise hit the database as a raw
+        # IntegrityError -> 500.
+        if value is None:
+            continue
         setattr(client, field, value)
     await session.commit()
     await session.refresh(client)
@@ -151,6 +155,10 @@ async def update_coming_soon(
     if item is None:
         raise HTTPException(404, "coming-soon item not found")
     for field, value in body.model_dump(exclude_unset=True).items():
+        # Explicit `null` on a NOT NULL column would otherwise hit the database as a raw
+        # IntegrityError -> 500.
+        if value is None:
+            continue
         setattr(item, field, value)
     await session.commit()
     await session.refresh(item)
@@ -170,6 +178,15 @@ class PlaylistOut(BaseModel):
 
 class PlaylistIn(BaseModel):
     youtube_playlist_url: str = Field(min_length=1)
+
+
+@router.get("/api/py/playlists", response_model=list[PlaylistOut])
+async def list_playlists(session: AsyncSession = Depends(get_session)) -> list[Playlist]:
+    # Returns whichever of the four categories already have a row — the admin tab
+    # renders all categories in one request rather than needing a 404-vs-empty
+    # convention per category.
+    result = await session.execute(select(Playlist))
+    return list(result.scalars().all())
 
 
 @router.put("/api/py/playlists/{category}", response_model=PlaylistOut)
