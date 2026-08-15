@@ -21,7 +21,9 @@ def test_login_with_correct_credentials_sets_httponly_cookie():
     r = client.post("/api/py/login", json={"username": "manish", "password": "correct-horse"})
     assert r.status_code == 200
     cookie = r.headers["set-cookie"]
-    assert "HttpOnly" in cookie and "samesite=lax" in cookie.lower()
+    assert "HttpOnly" in cookie
+    assert "Secure" in cookie
+    assert "samesite=lax" in cookie.lower()
 
 
 def test_login_with_wrong_password_is_rejected():
