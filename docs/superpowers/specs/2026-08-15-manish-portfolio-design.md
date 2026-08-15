@@ -229,17 +229,31 @@ never from client input.
 
 Numbering follows Manish's wireframes.
 
-**1 — Hero.** Portrait left (~40%, tall rounded frame), name right at
-`clamp(3.5rem, 9vw, 7rem)`, three bio lines, hairline rule, then `DOB · Phone · Email` in
-monospace with vertical dividers. **Height is 88vh, not 100vh** — this makes the top edge of
-the showreel peek into the fold, so when it starts at 2s the motion invites a scroll rather
-than ambushing the visitor.
+**1 + 2 — Hero with the show reel as its background.** *(Amended 2026-08-15 — see Decision
+Revision below. Manish's wireframe drew these as two sections; they are now one.)*
 
-**2 — Show Reel.** 16:9, centred, max-width 1100px. Poster image is the LCP element and loads
-immediately; the video fades in at **2 seconds — muted, looping, `playsinline`** (required, or
-iOS forces fullscreen). Custom control bar: sound toggle + "Watch full reel ↗".
-`IntersectionObserver` pauses playback off-screen. Honours `prefers-reduced-motion` and
-`navigator.connection.saveData` by showing the poster with a play button instead.
+Full-viewport (`100vh`, `100dvh` on mobile). The 30-second reel plays **full-bleed behind
+everything**, under a dark scrim heavy enough to hold text contrast (target ≥ 4.5:1 against
+`--ink`). Over it: the portrait as a smaller card, the name at `clamp(3.5rem, 9vw, 7rem)`,
+three bio lines, a hairline rule, then `DOB · Phone · Email` in monospace with vertical
+dividers. A sound toggle and "Watch full reel ↗" sit in a corner of the hero.
+
+Poster image is the LCP element and loads immediately; the video begins at **2 seconds —
+muted, looping, `playsinline`** (required, or iOS forces fullscreen). `IntersectionObserver`
+pauses playback once the hero scrolls away. Honours `prefers-reduced-motion` and
+`navigator.connection.saveData` by holding on the poster with a play button instead.
+
+> **Decision revision (2026-08-15).** The original design put the reel in its own section
+> below an 88vh hero, so its top edge would "peek" into the fold and the motion would invite a
+> scroll. Browser instrumentation during Task 4 proved this never fires: at 1440×1100 only
+> ~68px of the video card was visible — 17.7%, below the `0.25` observer threshold — and on
+> mobile the stacked hero overflows 88vh so **0%** peeked. The reel started and was paused 9ms
+> later, on every realistic viewport. The client's headline request ("a clip that starts
+> playing 2 seconds after someone visits") was therefore not delivered by the specified
+> design. Making the reel the hero background removes the visibility precondition entirely.
+> Cost, accepted knowingly: it departs from Manish's wireframe and his portrait loses
+> prominence. The standalone 16:9 section is dropped rather than showing the same 30 seconds
+> twice in a row.
 
 **3 — Work Experience + Education.** Two dot-and-rail vertical timelines side by side,
 stacking on mobile. Entries fade up 8px on scroll, staggered 60ms. Source: `content.json`.

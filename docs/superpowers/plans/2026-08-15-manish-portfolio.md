@@ -431,6 +431,24 @@ git add -A && git commit -m "Add hero section"
 
 ### Task 4: Section 2 — Show Reel with 2-second autoplay
 
+> ## ⚠️ AMENDED 2026-08-15 — read this before the steps below
+>
+> Tasks 3 and 4 were implemented as written, then **the design was changed**. Browser
+> instrumentation proved the "88vh hero so the reel peeks into the fold" mechanism never
+> fires: only 17.7% of the video card was visible at 1440×1100 (below the `0.25` observer
+> threshold) and **0%** on mobile, so the reel started and was paused 9ms later on every
+> realistic viewport. The client's core request was not being delivered.
+>
+> **The reel is now the hero's full-bleed background**, and the standalone 16:9 section is
+> dropped — sections 1 and 2 of the wireframe collapse into one full-viewport hero. See spec
+> §9 "Decision revision (2026-08-15)".
+>
+> The rework is specified in `.superpowers/sdd/2026-08-15-manish-portfolio/task-4-rework-brief.md`.
+> **The steps below are the superseded original** — kept for history. Do not implement them
+> as written; the video markup, control bar, and section wrapper all change. The behavioural
+> requirements (2s delay, muted, `loop`, `playsInline`, reduced-motion and `saveData`
+> suppression, observer pause, keyboard-reachable sound toggle) all carry over unchanged.
+
 This is the most behaviour-heavy component on the site. Read every step.
 
 **Files:**
