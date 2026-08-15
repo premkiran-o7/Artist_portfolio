@@ -1951,6 +1951,81 @@ npx vercel --prod
 
 ---
 
+---
+
+## Tasks 21–23 — added 2026-08-15: Manish maintains his own profile
+
+Added after the user asked for Manish to maintain his own details and swap his own showreel
+and portrait. A serverless function cannot write to the repo, so these fields move from
+`content.json` into a single-row `profile` table. See spec §6.2, "Decision revision — profile
+moves to the database".
+
+**These are not appended to the end of the run order.** Sequence them where they belong:
+
+| Task | Runs after | Why |
+|---|---|---|
+| 21 — `profile` schema, model, routes | Task 12 | It is CRUD work and shares Task 12's patterns |
+| 22 — `getProfile()` + component refactor | Task 14 | Depends on `lib/db.ts` existing |
+| 23 — Profile + Site Media admin tabs | Task 17 | Depends on the dashboard shell and R2 signing |
+
+### Task 21: `profile` table, model and routes
+
+**Files:** Create `migrations/002_profile.sql`, `api/_lib/routes_profile.py`, `tests/test_profile.py`. Modify `api/_lib/models.py`, `api/index.py`.
+
+**Interfaces:** Produces the `Profile` model and `GET /api/py/profile` (public) / `PUT /api/py/profile` (admin).
+
+- [ ] Write `migrations/002_profile.sql` — copy the `profile` table from spec §6.2 verbatim. The
+  boolean PK with `CHECK (id)` makes a second row impossible at the database level; do not
+  replace it with a serial id.
+- [ ] Add the `Profile` model to `models.py`. `bio` is `text[]` — map it with
+  `postgresql.ARRAY(String)`, not a plain `String`.
+- [ ] Write failing tests: `PUT` requires auth; `PUT` with a bio of 2 entries returns 422
+  (exactly three is required); `PUT` then `GET` round-trips every field; a second row cannot
+  be inserted.
+- [ ] Implement `routes_profile.py`. `PUT` is an upsert — `ON CONFLICT (id) DO UPDATE` — since
+  the row may not exist yet. Call `bust_cache()` after a successful write.
+- [ ] Run the migration against the local container, run the tests, commit.
+
+### Task 22: `getProfile()` with fallback, and the component refactor
+
+**Files:** Modify `lib/db.ts`, `lib/content.ts`, `app/page.tsx`, `components/Hero.tsx`, `components/Contact.tsx`. Test: `lib/db.test.ts`.
+
+**Interfaces:** Produces `getProfile(): Promise<Profile>`. `Hero` and `Contact` change from
+calling `getContent()` to taking a `profile` prop.
+
+- [ ] Add `getProfile()` to `lib/db.ts`. **It must never throw.** If `DATABASE_URL` is unset, the
+  query fails, or no row exists, return the profile fields from `content.json` instead. The
+  site must build before the table has ever been populated — that is the whole point of the
+  fallback.
+- [ ] Write a failing test proving the fallback: with `DATABASE_URL` unset, `getProfile()`
+  resolves to the `content.json` values rather than rejecting.
+- [ ] Change `Hero` and `Contact` to accept `profile` as a prop. `app/page.tsx` (a server
+  component) calls `getProfile()` once and passes it to both.
+- [ ] Leave `Timelines` and `Skills` calling `getContent()` directly — `experience`,
+  `education` and `skills` stay in `content.json`.
+- [ ] `portrait_url`, `showreel_url` and `showreel_poster_url` fall back to the committed
+  placeholders when null.
+- [ ] Verify the page still renders identically with an empty database, then with a populated
+  one. Commit.
+
+### Task 23: Profile and Site Media admin tabs
+
+**Files:** Modify `app/admin/dashboard/page.tsx`. Create `components/admin/ProfileForm.tsx`, `components/admin/SiteMediaForm.tsx`.
+
+- [ ] **Profile tab** — name, tagline, three bio lines, DOB, phone, email, and the three social
+  URLs. Validate exactly three bio lines client-side *and* trust the server's 422.
+- [ ] **Site Media tab** — upload the portrait (to `profile/`), the showreel and its poster (to
+  `showreel/`), each through the presigned-URL flow from Task 13. Show upload progress; a 30s
+  clip on a slow connection is not instant.
+- [ ] Warn, do not block, if the showreel exceeds 8MB — the server cap is 20MB, but 8MB is the
+  performance target and Manish should know when he crosses it.
+- [ ] Both tabs use the shared `adminFetch()` wrapper so the `X-Requested-With` CSRF header is
+  never forgotten.
+- [ ] Verify end to end: save a profile change, confirm the public page reflects it after
+  revalidation. Commit.
+
+---
+
 ## Deferred / explicitly not built
 
 These are recorded so nobody adds them by accident:

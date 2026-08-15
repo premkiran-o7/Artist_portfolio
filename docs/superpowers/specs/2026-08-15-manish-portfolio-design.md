@@ -169,7 +169,43 @@ CREATE TABLE login_attempts (         -- serverless has no shared memory; lockou
   failures     integer NOT NULL DEFAULT 0,
   locked_until timestamptz
 );
+
+-- Added 2026-08-15 — see "Decision revision: profile moves to the database" below.
+-- Single-row table. The boolean PK with a CHECK is the standard guard that makes a
+-- second row impossible at the database level rather than by convention.
+CREATE TABLE profile (
+  id                  boolean PRIMARY KEY DEFAULT true CHECK (id),
+  name                text NOT NULL,
+  tagline             text NOT NULL,
+  bio                 text[] NOT NULL,   -- exactly 3 entries, enforced in the app layer
+  dob                 text NOT NULL,
+  phone               text NOT NULL,
+  email               text NOT NULL,
+  instagram_url       text NOT NULL,
+  youtube_url         text NOT NULL,
+  linkedin_url        text NOT NULL,
+  portrait_url        text,              -- R2; falls back to the committed placeholder
+  showreel_url        text,              -- R2
+  showreel_poster_url text,              -- R2
+  updated_at          timestamptz NOT NULL DEFAULT now()
+);
 ```
+
+> **Decision revision — profile moves to the database (2026-08-15).** Originally every personal
+> detail lived in `content.json`, edited by the developer. The user asked for Manish to be able
+> to maintain his own details and swap his own showreel and portrait. A serverless function
+> cannot write to the repository, so those fields move to a single-row `profile` table.
+>
+> **`content.json` remains, in two roles:** it still owns `experience`, `education` and
+> `skills` — arrays of objects that change roughly annually and are where a CMS costs most for
+> least return — and it is the **build-time fallback** for the profile fields. If the `profile`
+> row is missing or the database is unreachable during a build, the site renders from
+> `content.json` rather than failing. This matters because the site must build before the table
+> has ever been populated.
+>
+> Consequence: `Hero` and `Contact` receive profile data as props from the server page instead
+> of calling `getContent()` themselves. `getContent()` continues to serve `Timelines` and
+> `Skills` directly.
 
 ### 6.3 R2 bucket layout
 
