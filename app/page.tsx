@@ -10,6 +10,8 @@ import Contact from "@/components/Contact";
 import SiteFooter from "@/components/SiteFooter";
 import { getVideos, getPlaylists, getClients, getComingSoon, getPhotos, resolveThumb } from "@/lib/db";
 import { CARD_CATEGORIES, type CardCategoryValue, type CategoryVideo } from "@/lib/categories";
+import { getContent } from "@/lib/content";
+import { personJsonLd, serializeJsonLd } from "@/lib/jsonLd";
 
 // Hourly backstop if the revalidation webhook (app/api/revalidate) ever fails
 // to fire or gets missed — see api/_lib/revalidate.py's bust_cache().
@@ -56,6 +58,17 @@ export default async function Page() {
 
   return (
     <>
+      {/* schema.org Person. Its job is to tie this page to Manish's Instagram,
+          YouTube and LinkedIn as one identity, so a search for his name
+          resolves here — see lib/jsonLd.ts. Rendered on the page rather than in
+          the layout because the layout also wraps /admin, which must stay
+          unindexed. */}
+      <script
+        type="application/ld+json"
+        // Server-rendered from our own content.json, and escaped by
+        // serializeJsonLd so the string can never close the <script> early.
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(personJsonLd(getContent())) }}
+      />
       <SiteHeader />
       <main>
         <Hero />

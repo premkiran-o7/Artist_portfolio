@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    Replaces the default Next.js triangle, which was still shipping in the
+    browser tab, in bookmarks and in some link previews.
+
+    An "M" drawn as a stroked path rather than as <text>: an SVG favicon is
+    rendered by the browser with no access to the site's webfonts, so a <text>
+    element would fall back to whatever the platform's default sans happens to
+    be and look different on every machine. A path always renders as drawn.
+
+    Sized for 16px first — that is where a favicon actually lives. Hence the
+    heavy 3.4 stroke, the generous counters, and no detail finer than the
+    accent rule at the bottom.
+  -->
+  <rect width="32" height="32" rx="7" fill="#0B0B0C"/>
+  <path d="M7.5 23.5 V9 L16 18 L24.5 9 V23.5"
+        fill="none" stroke="#F4F1EC" stroke-width="3.4"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="7.5" y="26" width="17" height="2.2" rx="1.1" fill="#E8552B"/>
+</svg>
