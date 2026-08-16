@@ -48,3 +48,10 @@ next-env.d.ts
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# agent tooling installed via `npx skills add` — vendored copies of skills that
+# are already available to the agent, not part of the site. Same reasoning as
+# .superpowers/ above: local assistant state, not project source.
+.agents/
+.claude/
+skills-lock.json
