@@ -78,6 +78,65 @@ describe("build-time reads never throw", () => {
   });
 });
 
+// Swallowing the error is the contract; swallowing it SILENTLY is the bug.
+// A failing query and an empty table both render an empty section, and before
+// this there was no way to tell them apart — a schema drift or a typo blanked a
+// whole section of the live site with completely clean build output.
+describe("a swallowed failure still leaves a trace", () => {
+  it("names the failing getter on stderr when the query rejects", async () => {
+    process.env.DATABASE_URL = "postgresql://user:pass@host/db";
+    mockedNeon.mockReturnValue(vi.fn().mockRejectedValue(new Error("relation \"videos\" does not exist")));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(getVideos()).resolves.toEqual([]);
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    // The label is the point: a bare driver stack trace does not say which
+    // query died, and all four getters fail identically.
+    const [message, cause] = spy.mock.calls[0];
+    expect(String(message)).toContain("getVideos");
+    expect((cause as Error).message).toContain("does not exist");
+    spy.mockRestore();
+  });
+
+  it("uses a distinct label per getter", async () => {
+    process.env.DATABASE_URL = "postgresql://user:pass@host/db";
+    mockedNeon.mockReturnValue(vi.fn().mockRejectedValue(new Error("boom")));
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await getVideos();
+    await getPlaylists();
+    await getClients();
+    await getComingSoon();
+
+    const labels = spy.mock.calls.map((c) => String(c[0]));
+    expect(labels.some((l) => l.includes("getVideos"))).toBe(true);
+    expect(labels.some((l) => l.includes("getPlaylists"))).toBe(true);
+    expect(labels.some((l) => l.includes("getClients"))).toBe(true);
+    expect(labels.some((l) => l.includes("getComingSoon"))).toBe(true);
+    // Four distinct labels, not one label reused — this is what fails if a
+    // copy-paste gives two getters the same name.
+    expect(new Set(labels).size).toBe(4);
+    spy.mockRestore();
+  });
+
+  it("stays silent on the legitimate empty-table and no-DATABASE_URL paths", async () => {
+    // Otherwise the signal is worthless: a site with genuinely empty tables —
+    // which is production today — would log on every single build.
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    delete process.env.DATABASE_URL;
+    await getVideos();
+
+    process.env.DATABASE_URL = "postgresql://user:pass@host/db";
+    mockedNeon.mockReturnValue(vi.fn().mockResolvedValue([]));
+    await getClients();
+
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+});
+
 describe("build-time reads resolve with driver rows on the happy path", () => {
   it("returns rows exactly as the driver resolves them", async () => {
     process.env.DATABASE_URL = "postgresql://user:pass@host/db";

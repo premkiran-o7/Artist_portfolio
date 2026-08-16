@@ -61,6 +61,7 @@ export function resolveThumb(v: VideoRow): string {
  * has to wrap construction of the client, not just the query call.
  */
 async function safeQuery<T>(
+  label: string,
   run: (sql: NeonQueryFunction<false, false>) => Promise<T[]>
 ): Promise<T[]> {
   const url = process.env.DATABASE_URL;
@@ -68,13 +69,27 @@ async function safeQuery<T>(
   try {
     const sql = neon(url);
     return await run(sql);
-  } catch {
+  } catch (err) {
+    // Never rethrow — see the contract above — but never swallow silently
+    // either. Without this line a SQL typo, a schema drift or an unreachable
+    // database blanks an entire section of the live site and the build output
+    // looks completely clean, so there is nothing to notice and nothing to
+    // grep for. `label` is what makes it actionable: "getVideos failed" points
+    // at one query, whereas a bare stack trace from inside a tagged-template
+    // driver does not.
+    //
+    // This is not hypothetical. It cost real time during Task 20: `neon()`
+    // speaks HTTPS, not the Postgres wire protocol, so it cannot talk to the
+    // local Postgres container at all — every getter returned [] and every
+    // data-driven section rendered empty, locally and identically to the
+    // legitimate "no rows yet" state, with zero output to distinguish them.
+    console.error(`[db] ${label} failed; section will render empty:`, err);
     return [];
   }
 }
 
 export async function getVideos(): Promise<VideoRow[]> {
-  return safeQuery<VideoRow>(async (sql) => {
+  return safeQuery<VideoRow>("getVideos", async (sql) => {
     const rows = await sql`
       SELECT id::text, title, category::text, youtube_url, youtube_id,
              visibility::text, thumb_url, is_featured, sort_order
@@ -85,7 +100,7 @@ export async function getVideos(): Promise<VideoRow[]> {
 }
 
 export async function getPlaylists(): Promise<PlaylistRow[]> {
-  return safeQuery<PlaylistRow>(async (sql) => {
+  return safeQuery<PlaylistRow>("getPlaylists", async (sql) => {
     const rows = await sql`
       SELECT category::text, youtube_playlist_url
       FROM playlists
@@ -95,7 +110,7 @@ export async function getPlaylists(): Promise<PlaylistRow[]> {
 }
 
 export async function getClients(): Promise<ClientRow[]> {
-  return safeQuery<ClientRow>(async (sql) => {
+  return safeQuery<ClientRow>("getClients", async (sql) => {
     const rows = await sql`
       SELECT id::text, name, instagram_url, thumb_url, sort_order
       FROM clients ORDER BY sort_order ASC
@@ -105,7 +120,7 @@ export async function getClients(): Promise<ClientRow[]> {
 }
 
 export async function getComingSoon(): Promise<ComingSoonRow[]> {
-  return safeQuery<ComingSoonRow>(async (sql) => {
+  return safeQuery<ComingSoonRow>("getComingSoon", async (sql) => {
     const rows = await sql`
       SELECT id::text, title, blurb, thumb_url, is_live
       FROM coming_soon
