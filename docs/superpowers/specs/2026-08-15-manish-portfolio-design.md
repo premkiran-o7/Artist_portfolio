@@ -345,6 +345,12 @@ main category grid. Driven by the `coming_soon` table, so Manish can tease whate
 for stills rather than 16:9 video. Images are **committed to the repo** under
 `public/work/3d/` and served as static assets.
 
+> **DEFERRED to last (2026-08-16, user's call: "maybe will add them at last").** Not
+> started, and not blocking anything — no other section references it, so this is purely
+> additive whenever the images arrive. Still needed from Manish: the image files
+> themselves, ideally at the largest size he has, plus a title per render (otherwise alt
+> text has to be derived from filenames, which reads badly for screen readers).
+
 > **Why committed files and not object storage (2026-08-16).** Every other uploadable asset
 > in this design goes to S3-compatible storage via presigned PUT. These don't, because no
 > storage provider is configured — R2 requires a card the user doesn't have, and the free
@@ -385,7 +391,22 @@ hero card and the software-skills grid. Its pastel/scrapbook styling is not bein
 ## 11. Quality targets
 
 - LCP < 2.0s on simulated 4G; **zero** cumulative layout shift.
-- < 120KB JS on the public page (before any YouTube iframe is requested).
+- **< 25KB gz of our own application code** on the public page (before any YouTube iframe
+  is requested). Measured 2026-08-16: **8.7KB**.
+
+> **Decision revision — the JS budget was unmeetable as written (2026-08-16).** This line
+> originally read "< 120KB JS on the public page". That target cannot be hit on Next 16's
+> App Router at all: React plus the App Router runtime is ~168KB gz on its own — 40% over
+> the budget before a single line of our code — and it is byte-identical on `/admin`, so no
+> amount of work on this page moves it. Total First Load JS is 177.1KB gz.
+>
+> A budget nobody can pass gets ignored, and an ignored budget catches nothing. Rewritten
+> to measure the part we actually control, which promptly earned its keep: the same audit
+> found `Contact.tsx` marked `"use client"` while calling `getContent()`, dragging zod and
+> `content.json` into a 71.6KB gz chunk that no runtime code used — the site's largest
+> asset. Removing it took First Load JS from 240.4KB to 177.1KB. Under the old framing that
+> regression sat inside a budget that was being failed for unrelated reasons and was
+> invisible; under the new one it would have been a 6x overshoot on day one.
 - Keyboard-reachable sound toggle; visible focus rings; alt text on every thumbnail;
   `prefers-reduced-motion` honoured throughout.
 - Semantic landmarks so screen readers can jump between the eight sections.
