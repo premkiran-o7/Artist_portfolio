@@ -341,28 +341,31 @@ main category grid. Driven by the `coming_soon` table, so Manish can tease whate
 > category for a video, should he ever shoot one — but it is no longer what drives either
 > the Coming Soon card or the section-5 grid.
 
-**7a — 3D Modeling.** A photo gallery in its own section below the video categories, sized
-for stills rather than 16:9 video. Images are **committed to the repo** under
-`public/work/3d/` and served as static assets.
+**7a — 3D Modeling.** Its own section below the video categories, sized for stills rather
+than 16:9 video. It renders **both photos and videos**: photos from the `photos` table,
+plus any video whose category is `3d-modeling`. Photos are uploaded to object storage and
+managed from the admin panel — created, reordered and deleted — like every other asset.
 
-> **DEFERRED to last (2026-08-16, user's call: "maybe will add them at last").** Not
-> started, and not blocking anything — no other section references it, so this is purely
-> additive whenever the images arrive. Still needed from Manish: the image files
-> themselves, ideally at the largest size he has, plus a title per render (otherwise alt
-> text has to be derived from filenames, which reads badly for screen readers).
-
-> **Why committed files and not object storage (2026-08-16).** Every other uploadable asset
-> in this design goes to S3-compatible storage via presigned PUT. These don't, because no
-> storage provider is configured — R2 requires a card the user doesn't have, and the free
-> alternatives all need an account set up first. Committed images need no account, no
-> credentials, no CORS configuration, and no new failure mode; they are versioned, and
-> Vercel's CDN serves them like any other static asset.
+> **Decision revision — photos are uploaded, not committed (2026-08-16).** This section
+> originally specified images **committed to the repo** under `public/work/3d/`. That was
+> never the preferred design; it was a workaround for having no object storage, and it was
+> chosen knowing the cost — Manish could not add or replace his own renders without a
+> redeploy.
 >
-> The cost is self-service: Manish cannot add or replace these through the admin panel the
-> way he can a video. Adding a photo means adding a file and redeploying. That was the
-> user's explicit call, made knowing the tradeoff. If storage is ever configured, this
-> section is the first thing that should move to it — `api/_lib/r2.py` is already
-> provider-agnostic (`S3_ENDPOINT_URL`) and needs env vars, not code.
+> Supabase Storage was configured and verified the same day (presigned PUT, public read,
+> CORS, delete), which removed the constraint the workaround existed for. Photos now live
+> in a `photos` table (see `migrations/002_photos.sql`) with their bytes in storage.
+>
+> The `photos` table carries a `category` rather than being 3D-specific. A photo belongs
+> to a category as naturally as a video does, and a `photos_3d` table would have to be
+> duplicated the first time he shoots stills for anything else. It is also what lets this
+> section hold both media types without a schema change.
+>
+> **Content note:** of the three renders supplied, two (Sushi Board, Park Bench) are clean
+> direct exports. The third (Isometric Bedroom) is a photograph of a monitor — visible
+> bezel, mouse cursor and screen texture — shipped at the user's explicit direction with
+> the intent to replace it later. Replacing it is now an admin-panel upload, not a code
+> change, which is precisely the point of this revision.
 
 **8 — Contact.** Email set large with copy-to-clipboard, phone, and social links. No form.
 
