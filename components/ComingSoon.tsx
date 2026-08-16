@@ -59,9 +59,9 @@ export default function ComingSoon({ items }: Props) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        // No storage provider is configured (spec §9.7a), so a
-                        // teaser normally has no image at all. Same monogram
-                        // plate as the client cards and the Skills tiles.
+                        // thumb_url is optional — Manish may leave a teaser
+                        // without an uploaded image. Same monogram plate as
+                        // the client cards and the Skills tiles for that case.
                         <div
                           aria-hidden="true"
                           className="grid h-full w-full place-items-center bg-[var(--rule)] font-[family-name:var(--font-display)] text-3xl text-[var(--ink-dim)]"

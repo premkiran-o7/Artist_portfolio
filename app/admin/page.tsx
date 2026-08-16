@@ -2,15 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import { adminFetch } from "@/lib/adminFetch";
+import { inputClass, labelClass } from "@/lib/adminFormStyles";
 
 type Status = "idle" | "pending";
-
-const inputClass =
-  "border border-[var(--rule)] bg-transparent px-3 py-2 text-[var(--ink)] " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
-
-const labelClass =
-  "font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]";
 
 /**
  * Admin sign-in. Sits on solid --ground (no video behind it, unlike the hero), so

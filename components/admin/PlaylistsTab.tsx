@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { adminFetch } from "@/lib/adminFetch";
+import { inputClass, labelClass } from "@/lib/adminFormStyles";
 import { CATEGORIES, type Category } from "./RowList";
 
 type RowStatus = "idle" | "pending" | "saved";
@@ -13,13 +14,6 @@ type Playlist = {
   category: Category;
   youtube_playlist_url: string;
 };
-
-const inputClass =
-  "border border-[var(--rule)] bg-transparent px-3 py-2 text-[var(--ink)] " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
-
-const labelClass =
-  "font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]";
 
 /**
  * The Playlists tab (Task 17): one "Full Playlist" URL per category (Section

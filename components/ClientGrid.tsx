@@ -92,11 +92,10 @@ export default function ClientGrid({ clients }: Props) {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        // thumb_url is null for EVERY client today (no storage
-                        // provider is configured — spec §9.7a), so this is the
-                        // normal path. A monogram plate, same idiom as the
-                        // Skills tiles, so a card with no upload still looks
-                        // composed instead of broken.
+                        // thumb_url is optional — a client added without an
+                        // uploaded logo falls back here. A monogram plate,
+                        // same idiom as the Skills tiles, so a card with no
+                        // upload still looks composed instead of broken.
                         <div
                           aria-hidden="true"
                           className="grid h-full w-full place-items-center bg-[var(--rule)] font-[family-name:var(--font-display)] text-3xl text-[var(--ink-dim)]"

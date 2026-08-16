@@ -56,9 +56,9 @@ export function livePromotions<T extends { is_live: boolean }>(rows: T[]): T[] {
 /**
  * Initials for the fallback plate on a client card with no `thumb_url`.
  *
- * No storage provider is configured (spec §9.7a), so `thumb_url` is null for
- * every client row today — the no-image path is the DEFAULT path, not an edge
- * case, and it has to look deliberate rather than broken. Same trick as
+ * Uploading a logo through the admin panel is optional, so `thumb_url` can
+ * still be null for any given client row — that path has to look deliberate
+ * rather than broken, not be treated as an edge case. Same trick as
  * components/Skills.tsx's monogram tiles.
  *
  * First letter of the first word plus first letter of the last word, so

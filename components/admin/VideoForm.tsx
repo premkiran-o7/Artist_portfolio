@@ -3,16 +3,11 @@
 import { useState, type FormEvent } from "react";
 import { adminFetch } from "@/lib/adminFetch";
 import { parseYouTubeId, thumbnailUrl } from "@/lib/youtube";
+import { inputClass, labelClass } from "@/lib/adminFormStyles";
 import { CATEGORIES, type Category, type Visibility } from "./RowList";
+import ThumbUploadField from "./ThumbUploadField";
 
 type Status = "idle" | "pending";
-
-const inputClass =
-  "border border-[var(--rule)] bg-transparent px-3 py-2 text-[var(--ink)] " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
-
-const labelClass =
-  "font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]";
 
 type Props = {
   /** Called after a successful POST, so the dashboard can re-fetch the list. */
@@ -32,14 +27,15 @@ type Props = {
  * not an error: any failure (non-OK status, network error, malformed JSON) is
  * swallowed silently and just leaves the title field for Manish to type.
  *
- * Upload wiring (brief Step 3) is deliberately NOT built here. No storage
- * provider is configured yet (see api/_lib/r2.py / routes_uploads.py — the
- * signing route exists server-side, but there is no live R2 account/bucket to
- * point it at). The file input below is disabled with a TODO documenting
- * exactly what Step 3 would do once that account exists. Until then, every
- * video is created without a `thumb_url`, and both the public site
- * (lib/db.ts's `resolveThumb()`) and this dashboard's own RowList fall back
- * to the YouTube-derived thumbnail automatically.
+ * Upload wiring (brief Step 3): ThumbUploadField below uploads straight to
+ * object storage (Supabase Storage over its S3-compatible API — see
+ * api/_lib/r2.py / routes_uploads.py) under the currently-selected video
+ * `category`, and reports the resulting public URL up via `onUploaded`. A
+ * video is only created WITHOUT a `thumb_url` when Manish doesn't choose a
+ * file — that stays a normal, supported path, not a limitation: both the
+ * public site (lib/db.ts's `resolveThumb()`) and this dashboard's own
+ * RowList fall back to the YouTube-derived thumbnail automatically whenever
+ * `thumb_url` is unset.
  */
 export default function VideoForm({ onCreated }: Props) {
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -48,6 +44,9 @@ export default function VideoForm({ onCreated }: Props) {
   const [visibility, setVisibility] = useState<Visibility>("unlisted");
   const [isFeatured, setIsFeatured] = useState(false);
   const [thumbPreview, setThumbPreview] = useState<string | null>(null);
+  const [thumbUrl, setThumbUrl] = useState("");
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbFieldKey, setThumbFieldKey] = useState(0);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -108,12 +107,13 @@ export default function VideoForm({ onCreated }: Props) {
           youtube_url: youtubeUrl.trim(),
           visibility,
           is_featured: isFeatured,
-          // thumb_url intentionally omitted — see the TODO near the disabled
-          // file input below. Omitting the key (rather than sending null)
-          // lets the backend's own default (None) apply cleanly on create;
-          // this only matters for PATCH, where an explicit null is silently
-          // ignored, but the habit of never sending null for an unset
-          // optional field is kept here too for consistency.
+          // Omit the key entirely when no thumbnail was uploaded (rather than
+          // sending ""), so the backend's own default (None) applies on
+          // create and the YouTube-derived thumbnail takes over (see
+          // lib/db.ts's resolveThumb). This only matters for PATCH, where an
+          // explicit null is silently ignored, but the habit of never
+          // sending null for an unset optional field is kept here too.
+          ...(thumbUrl ? { thumb_url: thumbUrl } : {}),
         }),
       });
     } catch {
@@ -132,6 +132,8 @@ export default function VideoForm({ onCreated }: Props) {
       setTitle("");
       setIsFeatured(false);
       setThumbPreview(null);
+      setThumbUrl("");
+      setThumbFieldKey((k) => k + 1); // remounts ThumbUploadField, clearing its file/preview
       setStatus("idle");
       await onCreated();
       return;
@@ -231,44 +233,20 @@ export default function VideoForm({ onCreated }: Props) {
         </div>
       </fieldset>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="thumb_file" className={labelClass}>
-          Thumbnail (optional)
-        </label>
-        {/*
-          TODO(upload): wire this up once a storage provider is configured —
-          no R2 account/bucket exists yet, only the signing route
-          (api/_lib/routes_uploads.py). When it does, submit should:
-            1. POST /api/py/uploads/sign { filename, contentType, category, sizeBytes }
-               via adminFetch, to get back { uploadUrl, publicUrl }.
-            2. PUT the file's bytes directly to `uploadUrl`, with a
-               Content-Type header matching EXACTLY the contentType that was
-               signed. This request must NOT go through adminFetch — it
-               carries no cookie/CSRF header and R2 would reject headers it
-               wasn't asked to sign for (see adminFetch.ts's own doc comment).
-               Show upload progress; a multi-MB file on a slow connection is
-               not instant.
-            3. Send the resulting `publicUrl` as `thumb_url` in the POST body
-               above, replacing the current omission.
-          Until then this input stays disabled and every video is created
-          without a thumb_url; the YouTube-derived thumbnail
-          (lib/youtube.ts's thumbnailUrl(), applied via lib/db.ts's
-          resolveThumb() on the public site and inline in RowList here) is
-          used automatically.
-        */}
-        <input
-          id="thumb_file"
-          name="thumb_file"
-          type="file"
-          accept="image/*"
-          disabled
-          title="Upload isn't set up yet — no storage provider is configured."
-          className={`${inputClass} cursor-not-allowed opacity-50`}
-        />
-        <p className="text-xs text-[var(--ink-dim)]">
-          Upload isn&rsquo;t set up yet — the YouTube thumbnail is used automatically.
-        </p>
-      </div>
+      {/* Uploads under the currently-selected video `category` — see
+          lib/uploadThumb.ts's `UploadCategory` doc comment for why that's a
+          valid `Category` value but a narrower type than what this field
+          generally accepts. Uploading is optional: if Manish never picks a
+          file, the YouTube-derived thumbnail (lib/youtube.ts's
+          thumbnailUrl()) is used automatically instead, both on the public
+          site (lib/db.ts's resolveThumb()) and inline in RowList here. */}
+      <ThumbUploadField
+        key={thumbFieldKey}
+        id="thumb_file"
+        category={category}
+        onUploaded={setThumbUrl}
+        onBusyChange={setThumbBusy}
+      />
 
       <label className="flex items-center gap-2 text-sm text-[var(--ink)]">
         <input
@@ -285,7 +263,7 @@ export default function VideoForm({ onCreated }: Props) {
 
       <button
         type="submit"
-        disabled={status === "pending"}
+        disabled={status === "pending" || thumbBusy}
         className="mt-2 self-start border border-[var(--rule)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] hover:border-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {status === "pending" ? "Adding…" : "Add video"}

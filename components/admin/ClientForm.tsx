@@ -3,16 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { adminFetch } from "@/lib/adminFetch";
 import { isInstagramUrl } from "@/lib/instagram";
-import DisabledThumbField from "./DisabledThumbField";
+import { inputClass, labelClass } from "@/lib/adminFormStyles";
+import ThumbUploadField from "./ThumbUploadField";
 
 type Status = "idle" | "pending";
-
-const inputClass =
-  "border border-[var(--rule)] bg-transparent px-3 py-2 text-[var(--ink)] " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
-
-const labelClass =
-  "font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)]";
 
 type Props = {
   /** Called after a successful POST, so the dashboard can re-fetch the list. */
@@ -32,13 +26,17 @@ type Props = {
  * `Field(min_length=1)` — see api/_lib/routes_clients.py), so this check
  * only exists here.
  *
- * Upload wiring is deliberately NOT built — see DisabledThumbField.tsx.
- * Every client is created without a `thumb_url`; the public site's client
- * grid (Section 6, not yet built) will need its own fallback for that.
+ * Thumbnail upload uses category "clients" (api/_lib/routes_uploads.py's
+ * FOLDERS key for client-logo thumbnails specifically — see
+ * lib/uploadThumb.ts's `UploadCategory` doc comment for why this is a wider
+ * set than the video `Category` enum).
  */
 export default function ClientForm({ onCreated }: Props) {
   const [name, setName] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
+  const [thumbUrl, setThumbUrl] = useState("");
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbFieldKey, setThumbFieldKey] = useState(0);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -65,11 +63,13 @@ export default function ClientForm({ onCreated }: Props) {
         body: JSON.stringify({
           name: name.trim(),
           instagram_url: instagramUrl.trim(),
-          // thumb_url intentionally omitted — see DisabledThumbField.tsx.
-          // Omitting the key (rather than sending null) lets the backend's
-          // own default (None) apply; this only matters for PATCH, where an
-          // explicit null is silently ignored, but the habit of never
-          // sending null for an unset optional field is kept here too.
+          // Omit the key entirely when no thumbnail was uploaded (rather than
+          // sending ""), so the backend's own default (None) applies on
+          // create. This only matters for PATCH, where an explicit null is
+          // silently ignored — see lib/db.ts's resolveThumb doc comment — but
+          // the habit of never sending null for an unset optional field is
+          // kept here too.
+          ...(thumbUrl ? { thumb_url: thumbUrl } : {}),
         }),
       });
     } catch {
@@ -86,6 +86,8 @@ export default function ClientForm({ onCreated }: Props) {
     if (res.ok) {
       setName("");
       setInstagramUrl("");
+      setThumbUrl("");
+      setThumbFieldKey((k) => k + 1); // remounts ThumbUploadField, clearing its file/preview
       setStatus("idle");
       await onCreated();
       return;
@@ -133,7 +135,13 @@ export default function ClientForm({ onCreated }: Props) {
         />
       </div>
 
-      <DisabledThumbField id="client_thumb_file" />
+      <ThumbUploadField
+        key={thumbFieldKey}
+        id="client_thumb_file"
+        category="clients"
+        onUploaded={setThumbUrl}
+        onBusyChange={setThumbBusy}
+      />
 
       <p role="alert" className="min-h-5 text-sm text-[var(--accent)]">
         {error}
@@ -141,7 +149,7 @@ export default function ClientForm({ onCreated }: Props) {
 
       <button
         type="submit"
-        disabled={status === "pending"}
+        disabled={status === "pending" || thumbBusy}
         className="mt-2 self-start border border-[var(--rule)] px-4 py-2 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] hover:border-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {status === "pending" ? "Adding…" : "Add client"}
