@@ -1,6 +1,5 @@
-"use client";
-import { useState } from "react";
 import { getContent } from "@/lib/content";
+import CopyEmailButton from "@/components/CopyEmailButton";
 
 /**
  * No form by design — a large mailto link converts better than a contact
@@ -9,22 +8,18 @@ import { getContent } from "@/lib/content";
  *
  * Sits on solid --ground, so --ink-dim is contrast-safe for the secondary
  * row (unlike over the hero's footage).
+ *
+ * SERVER COMPONENT — deliberately, and it must stay one. It calls
+ * getContent(), which imports zod; when this file carried "use client" that
+ * import shipped zod + content.json to the browser as a 305KB raw / ~72KB
+ * gzipped chunk, the largest on the site, used by nothing at runtime. The only
+ * thing here that ever needed state is the clipboard button, which now lives in
+ * components/CopyEmailButton.tsx and receives the address as a plain prop.
+ * Do not add "use client" to this file — put the interactive bit in its own
+ * leaf component instead. Enforced by lib/content.noClientImport.test.ts.
  */
 export default function Contact() {
   const c = getContent();
-  const [copied, setCopied] = useState(false);
-
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(c.email);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard API can be denied or unavailable (permissions, insecure
-      // context, unsupported browser) — the mailto link above is the primary
-      // path and still works regardless.
-    }
-  };
 
   const linkClass =
     "hover:text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
@@ -45,9 +40,7 @@ export default function Contact() {
           <a href={`tel:${c.phone.replace(/\s/g, "")}`} className={linkClass}>
             {c.phone}
           </a>
-          <button type="button" onClick={copyEmail} className={linkClass}>
-            {copied ? "Copied ✓" : "Copy email"}
-          </button>
+          <CopyEmailButton email={c.email} className={linkClass} />
           <a href={c.socials.instagram} target="_blank" rel="noopener noreferrer" className={linkClass}>
             Instagram
           </a>
@@ -58,10 +51,6 @@ export default function Contact() {
             LinkedIn
           </a>
         </div>
-
-        <p aria-live="polite" className="sr-only">
-          {copied ? "Email copied to clipboard" : ""}
-        </p>
       </div>
     </section>
   );
