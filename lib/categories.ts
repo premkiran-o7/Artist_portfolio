@@ -1,4 +1,4 @@
-import type { VideoRow } from "./db";
+import type { PhotoRow, VideoRow } from "./db";
 
 /**
  * Pure category-grouping helpers for the public "Work" section
@@ -40,6 +40,13 @@ export type CategoryVideo = Pick<
   "id" | "title" | "category" | "youtube_id" | "is_featured" | "sort_order"
 > & { thumb: string };
 
+/**
+ * The subset of a `photos` row components/ThreeDGallery.tsx needs. Same shape
+ * as CategoryVideo: plain data, safe for a "use client" component, with
+ * runtime imports from lib/db.ts kept out via `import type`.
+ */
+export type PhotoCard = Pick<PhotoRow, "id" | "title" | "category" | "image_url">;
+
 type MinimalVideo = { category: string; is_featured: boolean; sort_order: number };
 
 /**
@@ -49,6 +56,20 @@ type MinimalVideo = { category: string; is_featured: boolean; sort_order: number
  */
 export function videosForCategory<T extends MinimalVideo>(videos: T[], category: string): T[] {
   return videos.filter((v) => v.category === category);
+}
+
+/**
+ * Generic category filter, preserving input order — the same filter as
+ * `videosForCategory` above, minus its `is_featured`/`sort_order`
+ * requirement. `videosForCategory` stays scoped to `CategoryVideo` because
+ * that stricter `MinimalVideo` constraint is what lets `pickCardThumb` accept
+ * its result; ThreeDGallery.tsx has no cover-thumbnail logic and needs to
+ * filter both `CategoryVideo[]` and `PhotoCard[]` (photos carry no
+ * `is_featured` at all — see migrations/002_photos.sql), so it uses this one
+ * instead.
+ */
+export function byCategory<T extends { category: string }>(items: T[], category: string): T[] {
+  return items.filter((item) => item.category === category);
 }
 
 /**

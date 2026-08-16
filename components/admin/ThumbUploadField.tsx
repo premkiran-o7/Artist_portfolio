@@ -21,6 +21,12 @@ type Props = {
    * own submit button — the same "no double submit" contract the forms
    * already apply to their own POST (see e.g. VideoForm.tsx's `status`). */
   onBusyChange: (busy: boolean) => void;
+  /** Field label. Defaults to "Thumbnail (optional)" — accurate for every
+   * existing caller (Client/Video/ComingSoon thumbnails are all nullable
+   * columns). PhotoForm.tsx overrides this: `photos.image_url` is NOT NULL
+   * (migrations/002_photos.sql), so the upload there is required, not
+   * optional, and the label should not claim otherwise. */
+  label?: string;
 };
 
 /**
@@ -46,7 +52,13 @@ type Props = {
  * the token, so a stale upload's `.then`/`.catch` is a no-op when it
  * eventually resolves instead of clobbering newer state.
  */
-export default function ThumbUploadField({ id, category, onUploaded, onBusyChange }: Props) {
+export default function ThumbUploadField({
+  id,
+  category,
+  onUploaded,
+  onBusyChange,
+  label = "Thumbnail (optional)",
+}: Props) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -109,7 +121,7 @@ export default function ThumbUploadField({ id, category, onUploaded, onBusyChang
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className={labelClass}>
-        Thumbnail (optional)
+        {label}
       </label>
       <input
         id={id}

@@ -51,7 +51,7 @@ if _dotenv.get("DATABASE_URL"):
 # api._lib.db (transitively), which reads DATABASE_URL at import time.
 from api.index import app  # noqa: E402
 
-_TABLES = "videos, playlists, clients, coming_soon, login_attempts"
+_TABLES = "videos, playlists, clients, coming_soon, login_attempts, photos"
 
 
 async def _truncate_all() -> None:

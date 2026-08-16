@@ -6,18 +6,21 @@ import VideosTab from "@/components/admin/VideosTab";
 import ClientsTab from "@/components/admin/ClientsTab";
 import PlaylistsTab from "@/components/admin/PlaylistsTab";
 import ComingSoonTab from "@/components/admin/ComingSoonTab";
+import PhotosTab from "@/components/admin/PhotosTab";
 
 /**
- * The admin dashboard shell: sign-out, plus the four tabs Manish edits the
+ * The admin dashboard shell: sign-out, plus the five tabs Manish edits the
  * site through. Each tab is a self-contained client component that fetches its
  * own data via `adminFetch` — the shell holds no data of its own, only which
  * tab is showing.
  *
  * Only the selected tab is mounted, so switching tabs re-fetches that tab's
  * list. That's deliberate: it costs one request on switch but guarantees the
- * list is never stale, which matters because these four resources are not
+ * list is never stale, which matters because these resources are not
  * independent — publishing a playlist or flipping a coming-soon item to live
- * changes what the public page renders alongside the videos.
+ * changes what the public page renders alongside the videos, and photos
+ * co-exist with 3d-modeling videos in the same public section
+ * (components/ThreeDGallery.tsx).
  *
  * Keyboard behaviour follows the ARIA tabs pattern: Left/Right (and Home/End)
  * move between tabs, which is what a screen-reader user will expect from
@@ -28,6 +31,7 @@ import ComingSoonTab from "@/components/admin/ComingSoonTab";
 const TABS = [
   { id: "videos", label: "Videos", render: () => <VideosTab /> },
   { id: "clients", label: "Clients", render: () => <ClientsTab /> },
+  { id: "photos", label: "Photos", render: () => <PhotosTab /> },
   { id: "playlists", label: "Playlists", render: () => <PlaylistsTab /> },
   { id: "coming-soon", label: "Coming Soon", render: () => <ComingSoonTab /> },
 ] as const;

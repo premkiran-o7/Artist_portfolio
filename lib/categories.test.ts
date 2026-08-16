@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { videosForCategory, pickCardThumb } from "./categories";
+import { videosForCategory, pickCardThumb, byCategory } from "./categories";
 
 type Row = { id: string; category: string; is_featured: boolean; sort_order: number };
 
@@ -53,5 +53,30 @@ describe("pickCardThumb", () => {
     // Guards against a caller forgetting to pre-filter with videosForCategory.
     const rows = [mk("x", "short-form", true, 0), mk("a", "color-grade", false, 1)];
     expect(pickCardThumb(videosForCategory(rows, "color-grade"))?.id).toBe("a");
+  });
+});
+
+describe("byCategory", () => {
+  type PhotoLike = { id: string; category: string };
+  const mkPhoto = (id: string, category: string): PhotoLike => ({ id, category });
+
+  it("filters to only the requested category, preserving input order", () => {
+    const rows = [
+      mkPhoto("a", "3d-modeling"),
+      mkPhoto("b", "color-grade"),
+      mkPhoto("c", "3d-modeling"),
+    ];
+    expect(byCategory(rows, "3d-modeling").map((r) => r.id)).toEqual(["a", "c"]);
+  });
+
+  it("returns an empty array for a category with no matching rows", () => {
+    expect(byCategory([mkPhoto("a", "color-grade")], "3d-modeling")).toEqual([]);
+  });
+
+  it("works on items shaped like CategoryVideo too (no is_featured/sort_order requirement)", () => {
+    // The whole point of this helper over videosForCategory: it must accept
+    // types that don't carry is_featured/sort_order, like PhotoCard.
+    const rows = [mk("a", "3d-modeling", false, 0), mk("b", "color-grade", true, 0)];
+    expect(byCategory(rows, "3d-modeling").map((r) => r.id)).toEqual(["a"]);
   });
 });

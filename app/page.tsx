@@ -4,10 +4,11 @@ import Timelines from "@/components/Timelines";
 import Skills from "@/components/Skills";
 import CategoryCards from "@/components/CategoryCards";
 import ClientGrid from "@/components/ClientGrid";
+import ThreeDGallery from "@/components/ThreeDGallery";
 import ComingSoon from "@/components/ComingSoon";
 import Contact from "@/components/Contact";
 import SiteFooter from "@/components/SiteFooter";
-import { getVideos, getPlaylists, getClients, getComingSoon, resolveThumb } from "@/lib/db";
+import { getVideos, getPlaylists, getClients, getComingSoon, getPhotos, resolveThumb } from "@/lib/db";
 import { CARD_CATEGORIES, type CardCategoryValue, type CategoryVideo } from "@/lib/categories";
 
 // Hourly backstop if the revalidation webhook (app/api/revalidate) ever fails
@@ -29,11 +30,12 @@ export const revalidate = 3600;
  * import path back to the database driver.
  */
 export default async function Page() {
-  const [videos, playlists, clients, comingSoon] = await Promise.all([
+  const [videos, playlists, clients, comingSoon, photos] = await Promise.all([
     getVideos(),
     getPlaylists(),
     getClients(),
     getComingSoon(),
+    getPhotos(),
   ]);
 
   const categoryVideos: CategoryVideo[] = videos.map((v) => ({
@@ -70,6 +72,7 @@ export default async function Page() {
           comingSoon={comingSoon}
         />
         <ClientGrid clients={clients} />
+        <ThreeDGallery photos={photos} videos={categoryVideos} />
         <ComingSoon items={comingSoon} />
         <Contact />
       </main>

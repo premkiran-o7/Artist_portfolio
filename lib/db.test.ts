@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import type { Mock } from "vitest";
 import { neon } from "@neondatabase/serverless";
-import { getVideos, getPlaylists, getClients, getComingSoon, resolveThumb } from "./db";
-import type { VideoRow } from "./db";
+import { getVideos, getPlaylists, getClients, getComingSoon, getPhotos, resolveThumb } from "./db";
+import type { VideoRow, PhotoRow } from "./db";
 
 // The page is statically generated, so every getter below runs at *build* time.
 // A missing DATABASE_URL, a rejected query, or an empty table must all degrade
@@ -20,6 +20,14 @@ const SAMPLE_VIDEO: VideoRow = {
   visibility: "public",
   thumb_url: null,
   is_featured: false,
+  sort_order: 0,
+};
+
+const SAMPLE_PHOTO: PhotoRow = {
+  id: "1",
+  title: "Sushi Board",
+  category: "3d-modeling",
+  image_url: "https://example.com/sushi.jpg",
   sort_order: 0,
 };
 
@@ -42,6 +50,7 @@ describe("build-time reads never throw", () => {
     await expect(getPlaylists()).resolves.toEqual([]);
     await expect(getClients()).resolves.toEqual([]);
     await expect(getComingSoon()).resolves.toEqual([]);
+    await expect(getPhotos()).resolves.toEqual([]);
 
     // The driver must never even be constructed when there's nothing to connect to —
     // neon() throws synchronously on an undefined connection string, so this also
@@ -57,6 +66,7 @@ describe("build-time reads never throw", () => {
 
     await expect(getVideos()).resolves.toEqual([]);
     await expect(getClients()).resolves.toEqual([]);
+    await expect(getPhotos()).resolves.toEqual([]);
   });
 
   it("return [] when the query rejects (network failure, missing table, etc.)", async () => {
@@ -67,6 +77,7 @@ describe("build-time reads never throw", () => {
     await expect(getVideos()).resolves.toEqual([]);
     await expect(getPlaylists()).resolves.toEqual([]);
     await expect(getComingSoon()).resolves.toEqual([]);
+    await expect(getPhotos()).resolves.toEqual([]);
   });
 
   it("return [] when the query succeeds but the table is empty", async () => {
@@ -75,6 +86,7 @@ describe("build-time reads never throw", () => {
     mockedNeon.mockReturnValue(sqlFn);
 
     await expect(getClients()).resolves.toEqual([]);
+    await expect(getPhotos()).resolves.toEqual([]);
   });
 });
 
@@ -108,15 +120,17 @@ describe("a swallowed failure still leaves a trace", () => {
     await getPlaylists();
     await getClients();
     await getComingSoon();
+    await getPhotos();
 
     const labels = spy.mock.calls.map((c) => String(c[0]));
     expect(labels.some((l) => l.includes("getVideos"))).toBe(true);
     expect(labels.some((l) => l.includes("getPlaylists"))).toBe(true);
     expect(labels.some((l) => l.includes("getClients"))).toBe(true);
     expect(labels.some((l) => l.includes("getComingSoon"))).toBe(true);
-    // Four distinct labels, not one label reused — this is what fails if a
+    expect(labels.some((l) => l.includes("getPhotos"))).toBe(true);
+    // Five distinct labels, not one label reused — this is what fails if a
     // copy-paste gives two getters the same name.
-    expect(new Set(labels).size).toBe(4);
+    expect(new Set(labels).size).toBe(5);
     spy.mockRestore();
   });
 
@@ -131,6 +145,7 @@ describe("a swallowed failure still leaves a trace", () => {
     process.env.DATABASE_URL = "postgresql://user:pass@host/db";
     mockedNeon.mockReturnValue(vi.fn().mockResolvedValue([]));
     await getClients();
+    await getPhotos();
 
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
@@ -145,6 +160,16 @@ describe("build-time reads resolve with driver rows on the happy path", () => {
     mockedNeon.mockReturnValue(sqlFn);
 
     await expect(getVideos()).resolves.toEqual(rows);
+    expect(mockedNeon).toHaveBeenCalledWith("postgresql://user:pass@host/db");
+  });
+
+  it("returns photo rows exactly as the driver resolves them", async () => {
+    process.env.DATABASE_URL = "postgresql://user:pass@host/db";
+    const rows = [SAMPLE_PHOTO];
+    const sqlFn = vi.fn().mockResolvedValue(rows);
+    mockedNeon.mockReturnValue(sqlFn);
+
+    await expect(getPhotos()).resolves.toEqual(rows);
     expect(mockedNeon).toHaveBeenCalledWith("postgresql://user:pass@host/db");
   });
 });

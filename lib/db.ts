@@ -34,6 +34,14 @@ export type ComingSoonRow = {
   is_live: boolean;
 };
 
+export type PhotoRow = {
+  id: string;
+  title: string;
+  category: string;
+  image_url: string;
+  sort_order: number;
+};
+
 /**
  * Thumbnail precedence: Manish's upload wins; otherwise YouTube's own.
  *
@@ -126,5 +134,15 @@ export async function getComingSoon(): Promise<ComingSoonRow[]> {
       FROM coming_soon
     `;
     return rows as ComingSoonRow[];
+  });
+}
+
+export async function getPhotos(): Promise<PhotoRow[]> {
+  return safeQuery<PhotoRow>("getPhotos", async (sql) => {
+    const rows = await sql`
+      SELECT id::text, title, category::text, image_url, sort_order
+      FROM photos ORDER BY sort_order ASC
+    `;
+    return rows as PhotoRow[];
   });
 }
