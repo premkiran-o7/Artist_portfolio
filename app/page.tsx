@@ -59,9 +59,16 @@ export default async function Page() {
         <Hero />
         <Timelines />
         <Skills />
-        <CategoryCards videos={categoryVideos} playlistUrls={playlistUrls} />
-        {/* Raw rows on purpose — ComingSoon owns the is_live filter, so
-            pre-filtering here would duplicate that rule in two places. */}
+        {/* Both sections get the RAW coming-soon rows and apply their own half
+            of the is_live split — CategoryCards takes the promoted ones,
+            ComingSoon the pending ones. Splitting here instead would put that
+            rule in a third place and let the two halves drift apart, which is
+            precisely how promoted items came to belong to no section at all. */}
+        <CategoryCards
+          videos={categoryVideos}
+          playlistUrls={playlistUrls}
+          comingSoon={comingSoon}
+        />
         <ClientGrid clients={clients} />
         <ComingSoon items={comingSoon} />
         <Contact />

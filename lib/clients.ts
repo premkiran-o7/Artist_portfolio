@@ -38,6 +38,22 @@ export function pendingTeasers<T extends { is_live: boolean }>(rows: T[]): T[] {
 }
 
 /**
+ * The exact complement of `pendingTeasers`: the rows that HAVE been promoted,
+ * rendered as extra cards in the Work grid (components/CategoryCards.tsx).
+ *
+ * These two functions must stay complementary. Until this one existed,
+ * `is_live` was a trapdoor: flipping it removed the item from the Coming Soon
+ * section and nothing anywhere else consumed the flag, so the item silently
+ * vanished from the entire site. Manish would have had no way to tell that
+ * from "the save failed". Any future filter added to either function has to
+ * be mirrored in the other, or that hole reopens — the test suite asserts the
+ * partition explicitly for that reason.
+ */
+export function livePromotions<T extends { is_live: boolean }>(rows: T[]): T[] {
+  return rows.filter((r) => r.is_live);
+}
+
+/**
  * Initials for the fallback plate on a client card with no `thumb_url`.
  *
  * No storage provider is configured (spec §9.7a), so `thumb_url` is null for

@@ -10,12 +10,17 @@ import {
   type CardCategoryValue,
   type CategoryVideo,
 } from "@/lib/categories";
+import { livePromotions, monogram, type ComingSoonCard } from "@/lib/clients";
 
 type Props = {
   videos: CategoryVideo[];
   /** Only categories that actually have a row in `playlists` appear here —
    *  there is no guarantee all three do. */
   playlistUrls: Partial<Record<CardCategoryValue, string>>;
+  /** Raw `coming_soon` rows. Promoted (`is_live`) ones are rendered here as
+   *  extra cards; the filter lives in this component, not the caller, exactly
+   *  as ComingSoon.tsx owns the complementary one. */
+  comingSoon: ComingSoonCard[];
 };
 
 /**
@@ -33,7 +38,13 @@ type Props = {
  * siblings also means a click on the link never bubbles into the card's own
  * onClick — there is nothing to stopPropagation() against.
  */
-export default function CategoryCards({ videos, playlistUrls }: Props) {
+export default function CategoryCards({ videos, playlistUrls, comingSoon }: Props) {
+  // Items Manish has flipped to `is_live`. Spec §9.7 calls this "promotes it
+  // into the main category grid", and this is that grid — before this existed
+  // the flag was consumed by nothing, so promoting an item deleted it from
+  // the site's view entirely. See lib/clients.ts's livePromotions.
+  const promoted = livePromotions(comingSoon);
+
   const [openCategory, setOpenCategory] = useState<CardCategoryValue | null>(null);
   const triggerRefs = useRef<Partial<Record<CardCategoryValue, HTMLButtonElement | null>>>({});
 
@@ -122,6 +133,54 @@ export default function CategoryCards({ videos, playlistUrls }: Props) {
                         </a>
                       </div>
                     )}
+                  </div>
+                </Reveal>
+              </li>
+            );
+          })}
+
+          {/* Promoted coming-soon items, rendered as peers of the category
+              cards — same grid, same card chrome, but WITHOUT the dashed
+              border and "Working on it" pill that mark a teaser. That
+              difference is the whole visible payoff of flipping `is_live`.
+
+              These carry no video and no URL (`coming_soon` has no URL
+              column), so the card is deliberately non-interactive: no
+              <button>, no <a>, nothing to click. Same rule the empty-category
+              card above follows — a control that does nothing is worse than
+              no control. If a promoted item should ever be clickable, that
+              needs a URL column on the table, not a change here. */}
+          {promoted.map((item, index) => {
+            const initials = monogram(item.title);
+            return (
+              <li key={item.id}>
+                <Reveal delay={(CARD_CATEGORIES.length + index) * 60}>
+                  <div className="h-full overflow-hidden rounded-xl border border-[var(--rule)]">
+                    <div className="relative aspect-video bg-black">
+                      {item.thumb_url ? (
+                        <img
+                          src={item.thumb_url}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="grid h-full w-full place-items-center bg-[var(--rule)] font-[family-name:var(--font-display)] text-3xl text-[var(--ink-dim)]"
+                        >
+                          {initials}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-[family-name:var(--font-display)] text-xl">
+                        {item.title}
+                      </h3>
+                      {item.blurb && (
+                        <p className="mt-2 text-sm text-[var(--ink-dim)]">{item.blurb}</p>
+                      )}
+                    </div>
                   </div>
                 </Reveal>
               </li>

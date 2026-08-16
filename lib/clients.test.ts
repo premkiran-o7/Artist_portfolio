@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { monogram, pendingTeasers } from "./clients";
+import { monogram, pendingTeasers, livePromotions } from "./clients";
 
 describe("pendingTeasers", () => {
   const rows = [
@@ -63,5 +63,46 @@ describe("monogram", () => {
     // surrogate and render as a replacement glyph.
     expect(monogram("𝒜cme")).toBe(Array.from("𝒜")[0].toUpperCase());
     expect(Array.from(monogram("𝒜cme"))).toHaveLength(1);
+  });
+});
+
+describe("livePromotions", () => {
+  const rows = [
+    { id: "a", is_live: false },
+    { id: "b", is_live: true },
+    { id: "c", is_live: false },
+    { id: "d", is_live: true },
+  ];
+
+  it("returns only the promoted rows", () => {
+    expect(livePromotions(rows).map((r) => r.id)).toEqual(["b", "d"]);
+  });
+
+  it("returns nothing when no row is live", () => {
+    expect(livePromotions([{ id: "a", is_live: false }])).toEqual([]);
+  });
+
+  /**
+   * The regression guard for the `is_live` trapdoor. Before livePromotions
+   * existed, a promoted item left the Coming Soon section and appeared in no
+   * other — it disappeared from the site entirely, indistinguishably from a
+   * failed save.
+   *
+   * Asserting the PARTITION rather than each filter separately is what makes
+   * this durable: it fails if the two predicates ever stop being exact
+   * complements, including if someone adds a condition to one and forgets the
+   * other. Every row must land in exactly one bucket — never both, never
+   * neither.
+   */
+  it("partitions rows with pendingTeasers — every row lands in exactly one", () => {
+    const pending = pendingTeasers(rows);
+    const live = livePromotions(rows);
+
+    expect(pending.length + live.length).toBe(rows.length);
+    for (const row of rows) {
+      const inPending = pending.includes(row);
+      const inLive = live.includes(row);
+      expect(inPending !== inLive).toBe(true); // exactly one, never both/neither
+    }
   });
 });
