@@ -325,9 +325,38 @@ demand. "Full Playlist" links out to the real YouTube playlist from the `playlis
 the post in a new tab. **No Instagram embeds** — the wireframe says "links", and Instagram
 embeds cannot autoplay, carry Meta's chrome, are heavy, and break when the embed API changes.
 
-**7 — Coming Soon.** The "3D Modeling" card with a **View** button, deliberately styled
-unfinished: dashed border, reduced opacity, "Working on it" pill. Setting `is_live` promotes
-it into the main category grid.
+**7 — Coming Soon.** A teaser card with a **View** button, deliberately styled unfinished:
+dashed border, reduced opacity, "Working on it" pill. Setting `is_live` promotes it into the
+main category grid. Driven by the `coming_soon` table, so Manish can tease whatever he likes.
+
+> **Decision revision — 3D Modeling is real photo work, not a teaser (2026-08-16).** This
+> section originally *was* the 3D Modeling card: the assumption was that 3D was unfinished
+> work with nothing to show yet. It isn't. Manish has finished 3D pieces, and they are
+> **stills, not YouTube videos** — which the `videos` table cannot represent at all, since
+> every row requires a `youtube_url` and `youtube_id`.
+>
+> So 3D Modeling becomes **its own section** (section 7a below), and section 7 reverts to
+> what the `coming_soon` table always was underneath: a generic teaser mechanism not bound
+> to any one category. `3d-modeling` stays in the `category` enum — it is still a valid
+> category for a video, should he ever shoot one — but it is no longer what drives either
+> the Coming Soon card or the section-5 grid.
+
+**7a — 3D Modeling.** A photo gallery in its own section below the video categories, sized
+for stills rather than 16:9 video. Images are **committed to the repo** under
+`public/work/3d/` and served as static assets.
+
+> **Why committed files and not object storage (2026-08-16).** Every other uploadable asset
+> in this design goes to S3-compatible storage via presigned PUT. These don't, because no
+> storage provider is configured — R2 requires a card the user doesn't have, and the free
+> alternatives all need an account set up first. Committed images need no account, no
+> credentials, no CORS configuration, and no new failure mode; they are versioned, and
+> Vercel's CDN serves them like any other static asset.
+>
+> The cost is self-service: Manish cannot add or replace these through the admin panel the
+> way he can a video. Adding a photo means adding a file and redeploying. That was the
+> user's explicit call, made knowing the tradeoff. If storage is ever configured, this
+> section is the first thing that should move to it — `api/_lib/r2.py` is already
+> provider-agnostic (`S3_ENDPOINT_URL`) and needs env vars, not code.
 
 **8 — Contact.** Email set large with copy-to-clipboard, phone, and social links. No form.
 

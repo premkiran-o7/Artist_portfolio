@@ -3,9 +3,11 @@ import Hero from "@/components/Hero";
 import Timelines from "@/components/Timelines";
 import Skills from "@/components/Skills";
 import CategoryCards from "@/components/CategoryCards";
+import ClientGrid from "@/components/ClientGrid";
+import ComingSoon from "@/components/ComingSoon";
 import Contact from "@/components/Contact";
 import SiteFooter from "@/components/SiteFooter";
-import { getVideos, getPlaylists, resolveThumb } from "@/lib/db";
+import { getVideos, getPlaylists, getClients, getComingSoon, resolveThumb } from "@/lib/db";
 import { CARD_CATEGORIES, type CardCategoryValue, type CategoryVideo } from "@/lib/categories";
 
 // Hourly backstop if the revalidation webhook (app/api/revalidate) ever fails
@@ -27,7 +29,12 @@ export const revalidate = 3600;
  * import path back to the database driver.
  */
 export default async function Page() {
-  const [videos, playlists] = await Promise.all([getVideos(), getPlaylists()]);
+  const [videos, playlists, clients, comingSoon] = await Promise.all([
+    getVideos(),
+    getPlaylists(),
+    getClients(),
+    getComingSoon(),
+  ]);
 
   const categoryVideos: CategoryVideo[] = videos.map((v) => ({
     id: v.id,
@@ -53,6 +60,10 @@ export default async function Page() {
         <Timelines />
         <Skills />
         <CategoryCards videos={categoryVideos} playlistUrls={playlistUrls} />
+        {/* Raw rows on purpose — ComingSoon owns the is_live filter, so
+            pre-filtering here would duplicate that rule in two places. */}
+        <ClientGrid clients={clients} />
+        <ComingSoon items={comingSoon} />
         <Contact />
       </main>
       <SiteFooter />
