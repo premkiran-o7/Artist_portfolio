@@ -31,6 +31,7 @@ export type UploadCategory =
   | "text-tracking"
   | "3d-modeling"
   | "clients"
+  | "coming-soon"
   | "showreel"
   | "profile";
 

@@ -88,3 +88,20 @@ def test_requires_csrf_header(admin_client_no_csrf):
         "filename": "a.jpg", "contentType": "image/jpeg",
         "category": "color-grade", "sizeBytes": 1000})
     assert r.status_code == 403
+
+
+def test_accepts_coming_soon_category(admin_client):
+    """`coming_soon` rows carry no category column — the section is deliberately generic
+    (spec 9.7, revised 2026-08-16) — so its thumbnails need a folder of their own.
+
+    Before this key existed the admin form signed coming-soon uploads as "3d-modeling",
+    filing them under 3d-modeling/thumbs/. That was never a correct mapping, and it became
+    actively misleading once 3D Modeling was carved out as its own photo-gallery section:
+    the folder would have held images belonging to neither. Object keys are effectively
+    permanent, so this had to be right before the first upload, not after.
+    """
+    r = admin_client.post("/api/py/uploads/sign", json={
+        "filename": "teaser.png", "contentType": "image/png",
+        "category": "coming-soon", "sizeBytes": 1_000_000})
+    assert r.status_code == 200
+    assert r.json()["key"].startswith("coming-soon/thumbs/")

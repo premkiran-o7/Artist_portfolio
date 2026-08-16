@@ -25,23 +25,18 @@ type Props = {
  * not the PATCH null-skip path, but omitting keeps create and "unset" the
  * same shape as VideoForm.tsx's thumb_url omission.)
  *
- * Thumbnail upload category: "3d-modeling". `coming_soon` rows carry no
- * category column at all (spec §9.7's 2026-08-16 decision revision made this
- * section deliberately generic, not bound to any one category — see
- * components/ComingSoon.tsx's own doc comment), so none of
- * routes_uploads.py's FOLDERS keys is a clean semantic fit and this is a
- * judgment call, not a correct mapping. "3d-modeling" was picked over the
- * alternatives because it is the folder LEAST likely to collide with real
- * content: the actual "3D Modeling" section (spec §7a) bypasses object
- * storage entirely (committed static files, not yet started), and the video
- * `Category` "3d-modeling" is expected to stay rarely-if-ever used per the
- * spec's own wording ("should he ever shoot one"). "clients" was rejected
- * because ClientForm actively populates that folder with real client logos
- * today, and "showreel"/"profile" are singular site-owner assets, not a
- * multi-item thumbnail bucket. If this bothers Manish in practice, the clean
- * fix is a dedicated `"coming-soon": "coming-soon/thumbs"` entry in
- * routes_uploads.py's FOLDERS — deliberately not added here since this task
- * was scoped to the browser-side UI only.
+ * Thumbnail upload category: "coming-soon", filed under coming-soon/thumbs/.
+ * `coming_soon` rows carry no category column at all — spec §9.7's 2026-08-16
+ * revision made this section deliberately generic — so this needed a folder
+ * of its own rather than borrowing another section's.
+ *
+ * It briefly borrowed "3d-modeling" instead, as the FOLDERS key least likely
+ * to collide with real content. That reasoning held only while 3D Modeling
+ * had no content of its own; the same revision that made this section generic
+ * also carved 3D Modeling out as a real photo-gallery section (§7a), so that
+ * folder would have ended up holding images belonging to neither. Object keys
+ * are effectively permanent once files land on them, so the dedicated key was
+ * added to routes_uploads.py before the first upload rather than after.
  */
 export default function ComingSoonForm({ onCreated }: Props) {
   const [title, setTitle] = useState("");
@@ -143,7 +138,7 @@ export default function ComingSoonForm({ onCreated }: Props) {
       <ThumbUploadField
         key={thumbFieldKey}
         id="coming_soon_thumb_file"
-        category="3d-modeling"
+        category="coming-soon"
         onUploaded={setThumbUrl}
         onBusyChange={setThumbBusy}
       />

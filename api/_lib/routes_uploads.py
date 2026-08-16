@@ -49,6 +49,7 @@ FOLDERS: dict[str, str] = {
     "text-tracking": "text-tracking/thumbs",
     "3d-modeling": "3d-modeling/thumbs",
     "clients": "clients/thumbs",
+    "coming-soon": "coming-soon/thumbs",
     "showreel": "showreel",
     "profile": "profile",
 }
