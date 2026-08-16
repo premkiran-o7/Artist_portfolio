@@ -2,16 +2,18 @@ import { getContent } from "@/lib/content";
 
 // Nav targets — only ids that actually exist in the rendered DOM today.
 //
-//   "Reel"    dropped: the show reel is no longer a standalone section, it's
-//             the full-bleed background inside <Hero> (see ShowReel.tsx).
-//             There is no #showreel element to land on.
-//   "Work"    (#work) and "Clients" (#clients) are NOT here yet — those
-//             sections ship in Tasks 18 and 19. Add them back to this list
-//             once those sections exist, or every link below breaks the
-//             "every nav link resolves" rule this file is built to satisfy.
+//   "Reel"     dropped: the show reel is no longer a standalone section,
+//              it's the full-bleed background inside <Hero> (see
+//              ShowReel.tsx). There is no #showreel element to land on.
+//   "Work"     (#work) added back in Task 18 — components/CategoryCards.tsx
+//              now renders that id.
+//   "Clients"  (#clients) is NOT here yet — that section ships in Task 19.
+//              Add it back once it exists, or this link breaks the "every
+//              nav link resolves" rule this file is built to satisfy.
 const LINKS = [
   ["About", "#about"],
   ["Skills", "#skills"],
+  ["Work", "#work"],
   ["Contact", "#contact"],
 ] as const;
 
