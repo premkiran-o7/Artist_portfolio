@@ -22,7 +22,9 @@ type Props = { src?: string; poster?: string; youtubeUrl?: string };
  * Owns the backdrop, the scrim and the controls. It never reaches into the hero's
  * content, and the hero never reaches in here.
  */
-export default function ShowReel({ src, poster, youtubeUrl }: Props) {
+// `youtubeUrl` stays in Props (and Hero.tsx keeps passing it) even though nothing
+// reads it right now — see the commented-out "Watch full reel" link below.
+export default function ShowReel({ src, poster }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const [muted, setMuted] = useState(true);
@@ -142,6 +144,12 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
             {muted ? "Unmute" : "Mute"}
           </button>
         )}
+        {/* "Watch full reel ↗" — hidden at Manish's request (2026-08-16).
+            It linked to the YouTube channel, not to a reel, which is a promise
+            the destination doesn't keep while there is no reel to watch.
+            Uncomment to bring it back; `youtubeUrl` is still accepted as a prop
+            (and still passed by Hero.tsx) so restoring it is this block alone.
+
         {youtubeUrl && (
           <a
             href={youtubeUrl}
@@ -152,6 +160,7 @@ export default function ShowReel({ src, poster, youtubeUrl }: Props) {
             Watch full reel ↗
           </a>
         )}
+        */}
       </div>
     </>
   );

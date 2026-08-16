@@ -1,9 +1,8 @@
 {
   "name": "Manish Ravalkol",
-  "tagline": "AI video production · Editing · Prompt engineering",
+  "tagline": "Video Editor",
   "bio": [
-    "AI-driven video production, editing and prompt engineering.",
-    "Scripting through to final QC, at publisher scale.",
+    "AI-driven video production, video editing, color correction, Shortform content.",
     "AI Video Editor at Movate, Hyderabad."
   ],
   "dob": "24.11.2003",
@@ -31,9 +30,9 @@
     }
   ],
   "skills": [
+    { "name": "DaVinci Resolve", "icon": "davinci",   "level": 70, "mono": "DR" },
     { "name": "CapCut",          "icon": "capcut",    "level": 85, "mono": "CC" },
     { "name": "Lightroom",       "icon": "lightroom", "level": 85, "mono": "Lr" },
-    { "name": "DaVinci Resolve", "icon": "davinci",   "level": 70, "mono": "DR" },
     { "name": "Blender",         "icon": "blender",   "level": 60, "mono": "Bl" }
   ]
 }

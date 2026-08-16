@@ -9,7 +9,8 @@ describe("content", () => {
     const c = getContent();
     expect(c.name.length).toBeGreaterThan(0);
     expect(c.email).toContain("@");
-    expect(c.bio).toHaveLength(3);
+    expect(c.bio.length).toBeGreaterThan(0);
+    expect(c.bio.length).toBeLessThanOrEqual(3);
     expect(c.skills.length).toBeGreaterThan(0);
   });
 
@@ -37,9 +38,15 @@ describe("content", () => {
     expect(ContentSchema.shape.skills.safeParse([bad]).success).toBe(false);
   });
 
-  it("rejects a bio that is not exactly three lines", () => {
-    const r = ContentSchema.shape.bio.safeParse(["one", "two"]);
-    expect(r.success).toBe(false);
+  it("accepts a bio of one to three lines", () => {
+    expect(ContentSchema.shape.bio.safeParse(["one"]).success).toBe(true);
+    expect(ContentSchema.shape.bio.safeParse(["one", "two"]).success).toBe(true);
+    expect(ContentSchema.shape.bio.safeParse(["one", "two", "three"]).success).toBe(true);
+  });
+
+  it("rejects an empty bio or one past the hero's three-line ceiling", () => {
+    expect(ContentSchema.shape.bio.safeParse([]).success).toBe(false);
+    expect(ContentSchema.shape.bio.safeParse(["a", "b", "c", "d"]).success).toBe(false);
   });
 
   it("exports SkillLevel as a usable type", () => {

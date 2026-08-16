@@ -15,7 +15,13 @@ export type SkillLevel = z.infer<typeof SkillLevel>;
 export const ContentSchema = z.object({
   name: z.string().min(1),
   tagline: z.string().min(1),
-  bio: z.array(z.string().min(1)).length(3),
+  // 1-3 lines. This was `.length(3)` while the hero copy happened to be three
+  // lines; that turned a pure copy edit into a build failure the moment Manish
+  // cut one (2026-08-16: he dropped "Scripting through to final QC, at
+  // publisher scale."). The real constraint is the hero's layout — the bio sits
+  // in a fixed column above the contact rule and starts crowding it past three
+  // lines — so the schema encodes that ceiling and nothing tighter.
+  bio: z.array(z.string().min(1)).min(1).max(3),
   // Optional: Manish's CV carries no date of birth, and the hero omits the field
   // entirely when it is empty rather than rendering a placeholder dash.
   dob: z.string(),

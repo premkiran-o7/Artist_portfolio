@@ -12,8 +12,12 @@ const body = Geist({ subsets: ["latin"], variable: "--font-body", display: "swap
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Manish — Video Editor & Motion Designer",
-  description: "Colour grading, short-form content and motion graphics.",
+  // Kept in step with content.json's name/tagline/bio — the old copy claimed
+  // "Motion Designer" and "motion graphics", neither of which Manish lists as
+  // his own work.
+  title: "Manish Ravalkol — Video Editor",
+  description:
+    "AI-driven video production, video editing, color correction, Shortform content.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

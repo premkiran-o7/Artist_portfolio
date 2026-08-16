@@ -15,14 +15,26 @@ import type { PhotoRow, VideoRow } from "./db";
  * and resolveThumb() and hands the client only plain, pre-resolved props.
  */
 
-// This task (18) renders exactly these three categories as cards.
-// "3d-modeling" is deliberately excluded here — it is Task 19's Coming Soon
-// section (spec section 9, item 7), not this one. Labels match
+// The categories that get a card in the public Work grid. "3d-modeling" is
+// deliberately excluded — it has its own photo gallery section
+// (components/ThreeDGallery.tsx), not a card here. Labels match
 // components/admin/RowList.tsx's CATEGORIES verbatim so the vocabulary is
 // identical between the admin dropdown and the public card titles.
+//
+// This list is a SUBSET of the admin vocabulary, not a mirror of it: a category
+// can exist for uploading and organising work without being shown publicly.
 export const CARD_CATEGORIES = [
   { value: "color-grade", label: "Color Grade" },
-  { value: "short-form", label: "Short Form" },
+  // Short Form is hidden from the public Work grid at Manish's request
+  // (2026-08-16) — uncomment this line to bring the card back.
+  //
+  // Commented out rather than deleted, and left in place in the ADMIN
+  // vocabulary (components/admin/RowList.tsx's CATEGORIES, api/_lib/models.py's
+  // `category` enum, the `short-form` upload folder): short-form videos already
+  // in the table stay editable and keep their rows, they simply have no card to
+  // appear on. Deleting the value from the admin side instead would strand
+  // those rows behind a dropdown that can no longer represent them.
+  // { value: "short-form", label: "Short Form" },
   { value: "text-tracking", label: "Text Tracking" },
 ] as const;
 

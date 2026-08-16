@@ -24,11 +24,11 @@ type Props = {
 };
 
 /**
- * Section 5 of the wireframe: three category cards (Colour Grade / Short
- * Form / Text Tracking — "3d-modeling" belongs to Task 19's Coming Soon
- * section instead). Each card's body opens a lightbox of that category's
- * videos; "Full Playlist" is a plain external link, rendered only when the
- * category has a playlist row.
+ * Section 5 of the wireframe: one card per entry in CARD_CATEGORIES (today
+ * Colour Grade and Text Tracking — Short Form is commented out there, and
+ * "3d-modeling" has its own gallery section). Each card's body opens a
+ * lightbox of that category's videos; "Full Playlist" is a plain external
+ * link, rendered only when the category has a playlist row.
  *
  * The card body and the playlist link are DELIBERATE SIBLINGS inside one
  * wrapping <div>, never one nested inside the other — a <button> containing
@@ -60,11 +60,20 @@ export default function CategoryCards({ videos, playlistUrls, comingSoon }: Prop
   const openVideos = openCategory ? videosForCategory(videos, openCategory) : [];
   const openLabel = CARD_CATEGORIES.find((c) => c.value === openCategory)?.label ?? "";
 
+  // The grid was hardcoded to three columns back when CARD_CATEGORIES was
+  // exactly three entries. Now that a category can be commented out of that
+  // list, a fixed 3-up leaves a third of the row visibly empty, which reads as
+  // a card that failed to load rather than a deliberate two-card section.
+  // Both class strings are written out in full so Tailwind's scanner finds
+  // them — a computed `md:grid-cols-${n}` would never be generated.
+  const cardCount = CARD_CATEGORIES.length + promoted.length;
+  const columnClass = cardCount <= 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+
   return (
     <section id="work" className="px-6 md:px-12 py-16 scroll-mt-20">
       <div className="mx-auto w-full max-w-6xl">
         <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl">Work</h2>
-        <ul className="mt-10 grid gap-6 md:grid-cols-3">
+        <ul className={`mt-10 grid gap-6 ${columnClass}`}>
           {CARD_CATEGORIES.map(({ value, label }, index) => {
             const categoryVideos = videosForCategory(videos, value);
             const cover = pickCardThumb(categoryVideos);
