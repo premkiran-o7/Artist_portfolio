@@ -1,11 +1,10 @@
 {
   "name": "Manish Ravalkol",
-  "tagline": "Video Editor",
+  "tagline": "Video Editor | AI Video Production | Content Creation",
   "bio": [
-    "AI-driven video production, video editing, color correction, Shortform content.",
-    "AI Video Editor at Movate, Hyderabad."
+    "Video Editor with 2+ years of experience."
   ],
-  "dob": "24.11.2003",
+  "dob": "",
   "phone": "+91 63026 64146",
   "email": "roronoamanish@gmail.com",
   "socials": {
@@ -15,10 +14,10 @@
   },
   "experience": [
     {
-      "from": "2024",
-      "to": "Present",
+      "from": "September 2024",
+      "to": "2026",
       "company": "Movate (CSS Corp) — Hyderabad",
-      "role": "AI Video Editor · Client: Rizzle"
+      "role": "Video Editor · Client: Rizzle"
     }
   ],
   "education": [
@@ -30,9 +29,11 @@
     }
   ],
   "skills": [
-    { "name": "DaVinci Resolve", "icon": "davinci",   "level": 70, "mono": "DR" },
-    { "name": "CapCut",          "icon": "capcut",    "level": 85, "mono": "CC" },
-    { "name": "Lightroom",       "icon": "lightroom", "level": 85, "mono": "Lr" },
-    { "name": "Blender",         "icon": "blender",   "level": 60, "mono": "Bl" }
+    { "name": "DaVinci Resolve",     "icon": "davinci",   "mono": "DR" },
+    { "name": "Adobe After Effects", "icon": "ae",        "mono": "Ae" },
+    { "name": "CapCut",              "icon": "capcut",    "mono": "CC" },
+    { "name": "Canva",               "icon": "canva",     "mono": "Ca" },
+    { "name": "Adobe Lightroom",     "icon": "lightroom", "mono": "Lr" },
+    { "name": "Blender",             "icon": "blender",   "mono": "Bl" }
   ]
 }

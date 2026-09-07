@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { adminFetch } from "@/lib/adminFetch";
+import { isInstagramUrl } from "@/lib/instagram";
+import { inputClass } from "@/lib/adminFormStyles";
 import { moveAndReindex, reindexDelta } from "@/lib/adminReorder";
 
 // Mirrors api/_lib/routes_clients.py's ClientOut response shape.
@@ -37,6 +39,10 @@ export default function ClientList({ clients, loading, onChanged }: Props) {
   // "the whole list is mid-mutation" cleanly. Same reasoning as RowList.tsx.
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Inline edit state: which row is open, and the working copies of its fields.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editUrl, setEditUrl] = useState("");
 
   /** Same contract as RowList.tsx's: disables the list, surfaces failures,
    *  and returns void so onClick can call it without an unhandled rejection. */
@@ -83,6 +89,32 @@ export default function ClientList({ clients, loading, onChanged }: Props) {
       if (!results.every(Boolean)) {
         setError("Some rows could not be reordered — the order below is what the server has now.");
       }
+      await onChanged();
+    });
+  }
+
+  function startEdit(client: Client) {
+    setEditingId(client.id);
+    setEditName(client.name);
+    setEditUrl(client.instagram_url);
+    setError(null);
+  }
+
+  function handleSaveEdit(client: Client) {
+    const name = editName.trim();
+    const url = editUrl.trim();
+    if (!name) {
+      setError("Name cannot be empty.");
+      return;
+    }
+    if (!isInstagramUrl(url)) {
+      setError("Enter a valid instagram.com URL.");
+      return;
+    }
+    withBusy(async () => {
+      const ok = await patchClient(client.id, { name, instagram_url: url });
+      if (!ok) setError(`Could not update "${client.name}".`);
+      setEditingId(null);
       await onChanged();
     });
   }
@@ -140,48 +172,103 @@ export default function ClientList({ clients, loading, onChanged }: Props) {
         <tbody>
           {rows.map((client, i) => (
             <tr key={client.id} className="border-b border-[var(--rule)] text-[var(--ink)]">
-              <td className="py-2 pr-3">{client.name}</td>
-              <td className="py-2 pr-3">
-                <a
-                  href={client.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline underline-offset-4"
-                >
-                  {client.instagram_url}
-                </a>
-              </td>
-              <td className="py-2 pr-3 text-[var(--ink-dim)]">{client.sort_order}</td>
-              <td className="py-2 pr-3">
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    aria-label={`Move "${client.name}" up`}
-                    onClick={() => handleMove(rows, i, -1)}
-                    disabled={busy || i === 0}
-                    className="border border-[var(--rule)] px-2 py-1 text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Move "${client.name}" down`}
-                    onClick={() => handleMove(rows, i, 1)}
-                    disabled={busy || i === rows.length - 1}
-                    className="border border-[var(--rule)] px-2 py-1 text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(client)}
-                    disabled={busy}
-                    className="ml-2 border border-[var(--rule)] px-2 py-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--accent)] hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
+              {editingId === client.id ? (
+                <>
+                  <td className="py-2 pr-3">
+                    <input
+                      type="text"
+                      required
+                      maxLength={200}
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className={`${inputClass} max-w-[220px]`}
+                    />
+                  </td>
+                  <td className="py-2 pr-3">
+                    <input
+                      type="url"
+                      required
+                      value={editUrl}
+                      onChange={(e) => setEditUrl(e.target.value)}
+                      className={`${inputClass} max-w-[260px]`}
+                    />
+                  </td>
+                  <td className="py-2 pr-3 text-[var(--ink-dim)]">{client.sort_order}</td>
+                  <td className="py-2 pr-3">
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveEdit(client)}
+                        disabled={busy}
+                        className="border border-[var(--rule)] px-2 py-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        disabled={busy}
+                        className="border border-[var(--rule)] px-2 py-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink-dim)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td className="py-2 pr-3">{client.name}</td>
+                  <td className="py-2 pr-3">
+                    <a
+                      href={client.instagram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline underline-offset-4"
+                    >
+                      {client.instagram_url}
+                    </a>
+                  </td>
+                  <td className="py-2 pr-3 text-[var(--ink-dim)]">{client.sort_order}</td>
+                  <td className="py-2 pr-3">
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(client)}
+                        disabled={busy}
+                        className="border border-[var(--rule)] px-2 py-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Move "${client.name}" up`}
+                        onClick={() => handleMove(rows, i, -1)}
+                        disabled={busy || i === 0}
+                        className="border border-[var(--rule)] px-2 py-1 text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Move "${client.name}" down`}
+                        onClick={() => handleMove(rows, i, 1)}
+                        disabled={busy || i === rows.length - 1}
+                        className="border border-[var(--rule)] px-2 py-1 text-[var(--ink)] hover:border-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(client)}
+                        disabled={busy}
+                        className="ml-2 border border-[var(--rule)] px-2 py-1 font-[family-name:var(--font-mono)] text-xs uppercase tracking-widest text-[var(--accent)] hover:border-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>

@@ -1,17 +1,6 @@
 import { z } from "zod";
 import raw from "@/content.json";
 
-/**
- * A self-assessed proficiency percentage, 0-100.
- *
- * This was previously an enum of Expert/Advanced/Working. Labels were correct while
- * the values were our own guesses — an invented "85%" claims a precision nobody has,
- * whereas "Expert" is a defensible summary. Once Manish supplied his own figures the
- * calculus inverted: the numbers are his, and banding them discarded detail he gave us.
- */
-export const SkillLevel = z.number().int().min(0).max(100);
-export type SkillLevel = z.infer<typeof SkillLevel>;
-
 export const ContentSchema = z.object({
   name: z.string().min(1),
   tagline: z.string().min(1),
@@ -39,7 +28,7 @@ export const ContentSchema = z.object({
     from: z.string(), to: z.string(), institution: z.string(), detail: z.string(),
   })),
   skills: z.array(z.object({
-    name: z.string(), icon: z.string(), level: SkillLevel, mono: z.string().min(1),
+    name: z.string(), icon: z.string(), mono: z.string().min(1),
   })).min(1),
 });
 

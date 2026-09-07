@@ -72,7 +72,6 @@ export default async function Page() {
       <SiteHeader />
       <main>
         <Hero />
-        <Timelines />
         <Skills />
         {/* Both sections get the RAW coming-soon rows and apply their own half
             of the is_live split — CategoryCards takes the promoted ones,
@@ -86,6 +85,7 @@ export default async function Page() {
         />
         <ClientGrid clients={clients} />
         <ThreeDGallery photos={photos} videos={categoryVideos} />
+        <Timelines />
         <ComingSoon items={comingSoon} />
         <Contact />
       </main>
