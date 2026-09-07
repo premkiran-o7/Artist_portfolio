@@ -41,12 +41,6 @@ export default function Contact() {
             {c.phone}
           </a>
           <CopyEmailButton email={c.email} className={linkClass} />
-          <a href={c.socials.instagram} target="_blank" rel="noopener noreferrer" className={linkClass}>
-            Instagram
-          </a>
-          <a href={c.socials.youtube} target="_blank" rel="noopener noreferrer" className={linkClass}>
-            YouTube
-          </a>
           <a href={c.socials.linkedin} target="_blank" rel="noopener noreferrer" className={linkClass}>
             LinkedIn
           </a>

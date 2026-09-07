@@ -55,3 +55,6 @@ __pycache__/
 .agents/
 .claude/
 skills-lock.json
+
+# Vercel deploy hook — secret, keep out of the repo
+.deploy-hook-url
