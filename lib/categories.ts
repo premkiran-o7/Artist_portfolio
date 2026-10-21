@@ -19,12 +19,15 @@ import type { PhotoRow, VideoRow } from "./db";
 // deliberately excluded — it has its own photo gallery section
 // (components/ThreeDGallery.tsx), not a card here. Labels match
 // components/admin/RowList.tsx's CATEGORIES verbatim so the vocabulary is
-// identical between the admin dropdown and the public card titles.
+// identical between the admin dropdown and the public card titles — with one
+// deliberate divergence: the "text-tracking" card renders publicly as
+// "Short-form editing" (Manish's rename, 2026-10-21). The underlying category
+// value and its admin dropdown label are unchanged, so the videos stay put.
 //
 // This list is a SUBSET of the admin vocabulary, not a mirror of it: a category
 // can exist for uploading and organising work without being shown publicly.
 export const CARD_CATEGORIES = [
-  { value: "color-grade", label: "Color Grade" },
+  { value: "text-tracking", label: "Short-form editing" },
   // Short Form is hidden from the public Work grid at Manish's request
   // (2026-08-16) — uncomment this line to bring the card back.
   //
@@ -35,7 +38,7 @@ export const CARD_CATEGORIES = [
   // appear on. Deleting the value from the admin side instead would strand
   // those rows behind a dropdown that can no longer represent them.
   // { value: "short-form", label: "Short Form" },
-  { value: "text-tracking", label: "Text Tracking" },
+  { value: "color-grade", label: "Color Grade" },
 ] as const;
 
 export type CardCategoryValue = (typeof CARD_CATEGORIES)[number]["value"];

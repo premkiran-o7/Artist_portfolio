@@ -32,7 +32,7 @@
     { "name": "DaVinci Resolve",     "icon": "davinci",   "mono": "DR" },
     { "name": "Adobe After Effects", "icon": "ae",        "mono": "Ae" },
     { "name": "CapCut",              "icon": "capcut",    "mono": "CC" },
-    { "name": "Canva",               "icon": "canva",     "mono": "Ca" },
+    { "name": "Adobe Premiere Pro", "icon": "premiere",  "mono": "Pr" },
     { "name": "Adobe Lightroom",     "icon": "lightroom", "mono": "Lr" },
     { "name": "Blender",             "icon": "blender",   "mono": "Bl" }
   ]
